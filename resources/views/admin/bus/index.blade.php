@@ -38,16 +38,20 @@
     <div class="tableSpace">
         <table class="mb-3" id="sortable-table">
 
+
+
+
             <tbody>
 
                 @forelse ($all as $bus)
                     <tr>
 
+                        <td>{{ $bus->id }}</td>
                         <td style="text-align: {{ getLocale() == 'ar' ? 'right' : 'left' }}">
                             <x-icons.move></x-icons.move> {{ $bus->name }}
                         </td>
-
                         <input type="hidden" value="{{ $bus->id }}" class="ids">
+
 
 
                         <x-td_end id="{{ $bus->id }}" name="{{ $bus->name }}">

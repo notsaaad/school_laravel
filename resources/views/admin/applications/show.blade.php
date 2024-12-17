@@ -32,7 +32,9 @@
         }
     </style>
 @endsection
+    <script>
 
+    </script>
 
 @section('content')
     <div class="actions border-0">
@@ -65,7 +67,8 @@
                 </x-form.select>
             </div>
 
-            <div class="status_parant">
+
+            <div class="status_parant" @if($application->status == "new") style="display:none" @endif>
                 <x-form.select col="" required name="custom_status" label="">
 
                     <option selected disabled value="{{ $application->custom_status()?->id }}">

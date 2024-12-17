@@ -20,6 +20,8 @@ class busController extends Controller
         $all = bus::get();
         $regions = region::get();
 
+
+
         return view('admin/bus/index', compact('all', "regions"));
     }
 

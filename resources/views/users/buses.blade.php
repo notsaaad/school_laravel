@@ -122,7 +122,7 @@
                         type: 'get',
                         url: `/get_bus_settings/${place_id}`,
                         success: function(response) {
-
+                            console.log(response);
                             if (response.status == "success") {
                                 let cartona =
                                     `$('#bus_setting_id').html('<option value="" selected> Select Bus Type </option>');`
