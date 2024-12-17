@@ -1,0 +1,51 @@
+#menu {
+    display: block;
+}
+
+.links{
+    display: none;
+}
+
+
+header{
+    box-shadow: 0 5px 5px #00000012 !important;
+    padding-bottom: 12px;
+}
+
+
+
+.layer_show {
+    display: block;
+}
+
+
+
+.ul_show {
+    left: 0px !important;
+    transition: 0.3s ease-in-out 0s;
+}
+
+#links li a {
+    font-size: 14px;
+}
+
+
+.header_links li.active a {
+    padding: 0.4rem .8rem;
+    color: white;
+}
+
+.header_links li.active svg {
+    color: white;
+}
+
+
+
+.product img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    border-radius: .375rem;
+}
+
+
