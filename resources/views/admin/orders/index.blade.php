@@ -74,10 +74,13 @@
                             <td> <span class="copy" onclick="copy('{{ $order->reference }}')"><i
                                         class="fa-regular fa-clipboard"></i></span> <a
                                     href="/admin/orders/{{ $order->reference }}">{{ $order->reference }}</a> </td>
-                            <td>{{ $order->user->name }} <br>
+                            <td>@if (isset($order->user->name))
+                                {{ $order->user->name }}
+                            @endif
+                            <br>
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <span class="copy" onclick="copy(' {{ $order->user->code }}')"><i
-                                            class="fa-regular fa-clipboard"></i></span> {{ $order->user->code }}
+                                    {{-- <span class="copy" onclick="copy(' {{ $order->user->code }}')"><i
+                                            class="fa-regular fa-clipboard"></i></span> {{ $order->user->code }} --}}
                                 </div>
                             </td>
 

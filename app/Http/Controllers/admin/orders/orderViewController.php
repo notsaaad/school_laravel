@@ -13,7 +13,7 @@ class orderViewController extends Controller
     {
 
         $orders = order::paginate(50);
-
+        // return $orders[0]->user;
         return view("admin/orders/index", compact("orders"));
     }
 

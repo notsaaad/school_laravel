@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
+
+
 Route::get('home', function () {
     return view("users/home");
 });
@@ -78,3 +80,6 @@ Route::post('/subscribe_in_bus', [userController::class, 'subscribe_in_bus']);
 
 
 Route::get('logout', [userController::class, 'logout']);
+
+
+

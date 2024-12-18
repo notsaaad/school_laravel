@@ -1,17 +1,21 @@
 <?php
 
-use App\Http\Controllers\users\profile\profileController;
-use App\Http\Controllers\users\userController;
+use App\Mail\TestMail;
+use App\Models\region;
+use App\Models\busPlace;
 use App\Models\application;
+use App\Models\DynamicField;
+use Illuminate\Http\Request;
+use Illuminate\Mail\Mailable;
 use App\Models\applicationData;
 use App\Models\bus as busModel;
-use App\Models\busPlace;
-use App\Models\DynamicField;
-use App\Models\region;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\users\userController;
+use App\Http\Controllers\users\hatem\mailController;
+use App\Http\Controllers\users\profile\profileController;
 
 
 include('auth_routes.php');
@@ -150,3 +154,9 @@ Route::put('applications/{code}', function (Request $request, $code) {
 
     return redirect()->back()->with("success", "تم التحديث بنجاح");
 });
+
+
+// Route::get('/mail', function(){
+//     Mail::to("amir.hatem545@gmail.com")->send(new TestMail());
+//     return "email sent";
+// });

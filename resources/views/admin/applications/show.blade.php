@@ -224,14 +224,14 @@
                                         <option value="Not Tested"
                                             {{ $application_subject->status == 'Not Tested' ? 'selected' : '' }}>
                                             Not Tested</option>
-                                        <option value="Passed" {{ $application_subject->status == 'Passed' ? 'selected' : '' }}>
-                                            Passed
+                                        <option value="Accepted" {{ $application_subject->status == 'Accepted' ? 'selected' : '' }}>
+                                            Accepted
                                         </option>
-                                        <option value="Failed" {{ $application_subject->status == 'Failed' ? 'selected' : '' }}>
-                                            Failed
+                                        <option value="Rejected" {{ $application_subject->status == 'Rejected' ? 'selected' : '' }}>
+                                            Rejected
                                         </option>
-                                        <option value="Retake" {{ $application_subject->status == 'Retake' ? 'selected' : '' }}>
-                                            Retake
+                                        <option value="Re-Assessment" {{ $application_subject->status == 'Re-Assessment' ? 'selected' : '' }}>
+                                            Re-Assessment
                                         </option>
                                     </select>
                                 </td>
@@ -252,7 +252,7 @@
     @endcan
 
 
-    @if (!$application->application_subjects()->where('status', '!=', 'Passed')->exists() && $application->status == 'paid')
+    @if (!$application->application_subjects()->where('status', '!=', 'Accepted')->exists() && $application->status == 'paid')
         <div class="mt-3 d-flex justify-content-end"><x-form.button onclick="complate()"
                 title="Complate  Application"></x-form.button></div>
     @endif

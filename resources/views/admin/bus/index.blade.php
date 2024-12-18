@@ -43,10 +43,13 @@
 
             <tbody>
 
-                @forelse ($all as $bus)
+                @forelse ($AllData as $bus)
                     <tr>
 
                         <td>{{ $bus->id }}</td>
+                        <td>عدد المشتريكين : {{$bus->order_meta['bus_users_count']}}</td>
+                        <td>عدد الكراسي الفاضية ذاهبا : {{$bus->order_meta['empty_going_chairs']}}</td>
+                        <td>عدد الكراسي الفاضية رجوعا : {{$bus->order_meta['empty_return_chairs']}}</td>
                         <td style="text-align: {{ getLocale() == 'ar' ? 'right' : 'left' }}">
                             <x-icons.move></x-icons.move> {{ $bus->name }}
                         </td>

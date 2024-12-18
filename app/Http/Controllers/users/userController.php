@@ -2,25 +2,29 @@
 
 namespace App\Http\Controllers\users;
 
-use App\Exceptions\PackageValidationException;
-use App\Http\Controllers\Controller;
+
+use Carbon\Carbon;
+use App\Models\fee;
+use App\Models\cart;
+use App\Models\User;
+use App\Models\order;
+use App\packageTriat;
+use App\Models\package;
+use App\Models\product;
+use App\Models\variant;
 use App\Models\busOrder;
 use App\Models\busSetting;
-use App\Models\cart;
-use App\Models\fee;
-use App\Models\order;
 use App\Models\orderDatail;
-use App\Models\package;
-use App\Models\packageProduct;
-use App\Models\product;
-use App\Models\User;
-use App\Models\variant;
-use App\packageTriat;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\packageProduct;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Mail\user\subscibeBusMailer;
+use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use App\Exceptions\PackageValidationException;
 
 class userController extends Controller
 {
@@ -364,7 +368,9 @@ class userController extends Controller
 
         $bus_setting = busSetting::findOrFail($data["bus_setting_id"]);
 
+        $user_email = Auth()->user()->email;
 
+        Mail::to($user_email)->send(new subscibeBusMailer);
         busOrder::create([
             "user_id" => auth()->id(),
             "bus_id" => $bus_setting->bus_id,

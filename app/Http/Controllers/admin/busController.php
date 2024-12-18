@@ -16,13 +16,66 @@ class busController extends Controller
 
     public function index()
     {
-
+        $status_order = 'pending';
+        $AllData = array();
         $all = bus::get();
         $regions = region::get();
+        $bus_count = count($all);
 
 
 
-        return view('admin/bus/index', compact('all', "regions"));
+
+        for($i = 0; $i<$bus_count; $i++){
+            $bus_id =$all[$i]['id'];
+
+            array_push($AllData , $all[$i]);
+
+            $orders =  DB::table('bus_orders')
+            ->where('bus_id' , $bus_id )
+            ->where('status', $status_order)
+            ->get();
+
+            $userOrders = DB::table('bus_orders')
+            ->where('bus_id' , $bus_id )
+            ->where('status', $status_order)
+            ->pluck('user_id');
+
+            $user_count = count($userOrders);
+
+
+
+            $going_char = DB::table('bus_orders')
+            ->where('bus_id' , $bus_id )
+            ->where('status', $status_order)
+            ->sum('go_chairs_count');
+
+            $return_charis = DB::table('bus_orders')
+            ->where('bus_id' , $bus_id )
+            ->where('status', $status_order)
+            ->sum('return_chairs_count');
+
+
+
+            $bus_going_charis_counter = $all[$i]['go_chairs_count'];
+            $bus_return_charis_counter = $all[$i]['return_chairs_count'];
+
+            $emptyGoingChairs = (int)$bus_going_charis_counter  - (int)$going_char;
+            $emptyreturnChairs = (int)$bus_return_charis_counter  - (int)$return_charis;
+
+
+            $AllData[$i]['order_meta'] = array(
+                'bus_users_count' => $user_count,
+                'empty_going_chairs' => $emptyGoingChairs,
+                'empty_return_chairs' => $emptyreturnChairs,
+                'going_chair_counter' => $bus_going_charis_counter,
+                'return_chair_counter' => $bus_return_charis_counter
+            );
+
+        }
+
+        // return $AllData;
+
+        return view('admin/bus/index', compact('all', "regions", 'AllData'));
     }
 
     public function destroy(Request $request)

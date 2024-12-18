@@ -117,7 +117,7 @@
 
 
     <div class="col-lg-3 col-6 group ">
-        <label for="own_package" class="mb-2"> شراء items بدون packages <span class="text-danger">*</span>
+        <label for="own_package" class="mb-2">هل لديه باكدج<span class="text-danger">*</span>
         </label>
         <select name="own_package" class="modelSelect">
             <option @selected($user->own_package == 'yes') value="yes">نعم</option>

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
             $table->foreignId('subject_id')->constrained('test_subjects')->onDelete('cascade');
 
-            $table->enum('status', ['Not Tested', 'Passed', "Failed", "Retake"])->default('Not Tested');
+            $table->enum('status', ['Not Tested', 'Accepted', "Rejected", "Re-Assessment"])->default('Not Tested');
 
             $table->string("retake_data")->nullable();
 
