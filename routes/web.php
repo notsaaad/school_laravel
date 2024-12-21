@@ -76,6 +76,8 @@ Route::prefix("profile")->middleware("auth")->group(function () {
 
 Route::post('students_login', [userController::class, 'login']);
 
+Route::get('students/hatem-check', [userController::class, 'Hatem_handel_All_with_nat_id']);
+
 
 
 Route::get('get_places/{id}', function ($id) {

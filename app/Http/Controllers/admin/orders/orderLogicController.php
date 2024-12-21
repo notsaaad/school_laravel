@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\admin\orders;
 
-use App\Http\Controllers\Controller;
-use App\Models\order;
-use App\Models\orderDatail;
-use App\Models\paymentHistory;
-use App\Models\variant;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Models\order;
+use App\Models\variant;
+use App\Models\orderDatail;
 use Illuminate\Http\Request;
+use App\Models\paymentHistory;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class orderLogicController extends Controller
 {
@@ -27,6 +28,7 @@ class orderLogicController extends Controller
 
         return redirect()->back()->with("success", "تم الغاء الاوردر بنجاح");
     }
+
     function return_requested(Request $request, order $order)
     {
 
@@ -133,6 +135,8 @@ class orderLogicController extends Controller
                 $order->update([
                     "status" => "paid"
                 ]);
+                $user_id = $order->user_id;
+                User::where('id', $user_id)->update(["own_package" => "yes"]);
             }
 
 
@@ -142,7 +146,8 @@ class orderLogicController extends Controller
             return redirect()->back()->with("success", "تم استلام" . " " . $data["receivedAmount"]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return redirect()->back()->with("error", $th->getMessage());
+            // return redirect()->back()->with("error", $th->getMessage());
+            return  $th->getMessage();
         }
     }
 

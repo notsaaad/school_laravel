@@ -200,7 +200,6 @@
             <div class="row g-2">
                 <x-form.input required label="{{ trans('words.اسم الطالب') }}" name="name">
                 </x-form.input>
-
                 <x-form.input required label="{{ trans('words.كود الطالب') }}" name="code">
                 </x-form.input>
 
