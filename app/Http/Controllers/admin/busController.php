@@ -14,163 +14,162 @@ use Illuminate\Support\Arr;
 class busController extends Controller
 {
 
-    public function index()
-    {
-        $status_order = 'pending';
-        $AllData = array();
-        $all = bus::get();
-        $regions = region::get();
-        $bus_count = count($all);
+public function index(){
+    $status_order = 'pending';
+    $AllData = array();
+    $all = bus::get();
+    $regions = region::get();
+    $bus_count = count($all);
 
 
 
 
-        for($i = 0; $i<$bus_count; $i++){
-            $bus_id =$all[$i]['id'];
+    for($i = 0; $i<$bus_count; $i++){
+        $bus_id =$all[$i]['id'];
 
-            array_push($AllData , $all[$i]);
+        array_push($AllData , $all[$i]);
 
-            $orders =  DB::table('bus_orders')
-            ->where('bus_id' , $bus_id )
-            ->where('status', $status_order)
-            ->get();
+        $orders =  DB::table('bus_orders')
+        ->where('bus_id' , $bus_id )
+        ->where('status', $status_order)
+        ->get();
 
-            $userOrders = DB::table('bus_orders')
-            ->where('bus_id' , $bus_id )
-            ->where('status', $status_order)
-            ->pluck('user_id');
+        $userOrders = DB::table('bus_orders')
+        ->where('bus_id' , $bus_id )
+        ->where('status', $status_order)
+        ->pluck('user_id');
 
-            $user_count = count($userOrders);
-
-
-
-            $going_char = DB::table('bus_orders')
-            ->where('bus_id' , $bus_id )
-            ->where('status', $status_order)
-            ->sum('go_chairs_count');
-
-            $return_charis = DB::table('bus_orders')
-            ->where('bus_id' , $bus_id )
-            ->where('status', $status_order)
-            ->sum('return_chairs_count');
+        $user_count = count($userOrders);
 
 
 
-            $bus_going_charis_counter = $all[$i]['go_chairs_count'];
-            $bus_return_charis_counter = $all[$i]['return_chairs_count'];
+        $going_char = DB::table('bus_orders')
+        ->where('bus_id' , $bus_id )
+        ->where('status', $status_order)
+        ->sum('go_chairs_count');
 
-            $emptyGoingChairs = (int)$bus_going_charis_counter  - (int)$going_char;
-            $emptyreturnChairs = (int)$bus_return_charis_counter  - (int)$return_charis;
+        $return_charis = DB::table('bus_orders')
+        ->where('bus_id' , $bus_id )
+        ->where('status', $status_order)
+        ->sum('return_chairs_count');
 
 
-            $AllData[$i]['order_meta'] = array(
-                'bus_users_count' => $user_count,
-                'empty_going_chairs' => $emptyGoingChairs,
-                'empty_return_chairs' => $emptyreturnChairs,
-                'going_chair_counter' => $bus_going_charis_counter,
-                'return_chair_counter' => $bus_return_charis_counter
-            );
 
-        }
+        $bus_going_charis_counter = $all[$i]['go_chairs_count'];
+        $bus_return_charis_counter = $all[$i]['return_chairs_count'];
 
-        // return $AllData;
+        $emptyGoingChairs = (int)$bus_going_charis_counter  - (int)$going_char;
+        $emptyreturnChairs = (int)$bus_return_charis_counter  - (int)$return_charis;
 
-        return view('admin/bus/index', compact('all', "regions", 'AllData'));
+
+        $AllData[$i]['order_meta'] = array(
+            'bus_users_count' => $user_count,
+            'empty_going_chairs' => $emptyGoingChairs,
+            'empty_return_chairs' => $emptyreturnChairs,
+            'going_chair_counter' => $bus_going_charis_counter,
+            'return_chair_counter' => $bus_return_charis_counter
+        );
+
     }
 
-    public function destroy(Request $request)
-    {
+    // return $AllData;
 
-        $bus = bus::findOrFail($request->delete_id);
-        $bus->delete();
-        return Redirect::back()->with("success", "تم الازالة بنجاح");
-    }
+    return view('admin/bus/index', compact('all', "regions", 'AllData'));
+}
 
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string',
-            'go_chairs_count' => 'required|integer|min:1',
-            'return_chairs_count' => 'required|integer|min:1',
-            'area_ids' => 'nullable|array',
-            'area_ids.*' => 'exists:places,id',
-        ]);
+public function destroy(Request $request){
 
 
-        DB::beginTransaction();
-
-        $busData = Arr::except($data, ['area_ids']);
-
-        $bus = bus::create($busData);
-
-        if (isset($data['area_ids'])) {
-            $bus->places()->sync($data['area_ids']);
-        }
+    $bus = bus::findOrFail($request->delete_id);
+    $bus->delete();
+    return Redirect::back()->with("success", "تم الازالة بنجاح");
+}
 
 
-        DB::commit();
-        return Redirect::back()->with("success", "تم الاضافة بنجاح");
-    }
+public function store(Request $request){
 
-    public function update(Request $request)
-    {
-
-        $data = $request->validate([
-            "idInput" => "required|string",
-            'nameInput' => 'required|string',
-            'go_chairs_countInput' => 'required|integer|min:1',
-            'return_chairs_countInput' => 'required|integer|min:1',
-            'area_ids' => 'nullable|array',
-            'area_ids.*' => 'exists:places,id',
-        ]);
-
-        $data = collect($data)->mapWithKeys(function ($value, $key) {
-            return [str_replace('Input', '', $key) => $value];
-        })->toArray();
+    $data = $request->validate([
+        'name' => 'required|string',
+        'go_chairs_count' => 'required|integer|min:1',
+        'return_chairs_count' => 'required|integer|min:1',
+        'area_ids' => 'nullable|array',
+        'area_ids.*' => 'exists:places,id',
+    ]);
 
 
-        $bus = bus::findOrFail($data["id"]);
+    DB::beginTransaction();
 
+    $busData = Arr::except($data, ['area_ids']);
 
-        DB::beginTransaction();
+    $bus = bus::create($busData);
 
-        $busData = Arr::except($data, ['area_ids']);
-
-        $bus->update($busData);
-
-        if (isset($data['area_ids'])) {
-            $bus->places()->sync($data['area_ids']);
-        }
-
-
-        DB::commit();
-
-        return Redirect::back()->with("success", "تم التعديل بنجاح");
+    if (isset($data['area_ids'])) {
+        $bus->places()->sync($data['area_ids']);
     }
 
 
-    public function changeOrder(Request $request)
-    {
+    DB::commit();
+    return Redirect::back()->with("success", "تم الاضافة بنجاح");
+}
+
+public function update(Request $request)
+{
+
+    $data = $request->validate([
+        "idInput" => "required|string",
+        'nameInput' => 'required|string',
+        'go_chairs_countInput' => 'required|integer|min:1',
+        'return_chairs_countInput' => 'required|integer|min:1',
+        'area_ids' => 'nullable|array',
+        'area_ids.*' => 'exists:places,id',
+    ]);
+
+    $data = collect($data)->mapWithKeys(function ($value, $key) {
+        return [str_replace('Input', '', $key) => $value];
+    })->toArray();
 
 
-        bus::where('id', $request->id)->update([
-            'order' => $request->order + 1
-        ]);
+    $bus = bus::findOrFail($data["id"]);
 
-        return true;
+
+    DB::beginTransaction();
+
+    $busData = Arr::except($data, ['area_ids']);
+
+    $bus->update($busData);
+
+    if (isset($data['area_ids'])) {
+        $bus->places()->sync($data['area_ids']);
     }
 
-    function settings(bus $bus)
-    {
-        return view("admin.bus.settings", get_defined_vars());
-    }
+
+    DB::commit();
+
+    return Redirect::back()->with("success", "تم التعديل بنجاح");
+}
 
 
-    function orders()
-    {
-        $orders = busOrder::simplePaginate(50);
+public function changeOrder(Request $request)
+{
 
-        return view("admin.bus.orders", get_defined_vars());
-    }
+
+    bus::where('id', $request->id)->update([
+        'order' => $request->order + 1
+    ]);
+
+    return true;
+}
+
+function settings(bus $bus)
+{
+    return view("admin.bus.settings", get_defined_vars());
+}
+
+
+function orders()
+{
+    $orders = busOrder::simplePaginate(50);
+
+    return view("admin.bus.orders", get_defined_vars());
+}
 }
