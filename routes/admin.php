@@ -1,39 +1,40 @@
 <?php
 
-use App\Http\Controllers\admin\applicationsController;
-use App\Http\Controllers\admin\busController;
-use App\Http\Controllers\admin\customStatusController;
-use App\Http\Controllers\admin\dynamicFieldsController;
-use App\Http\Controllers\admin\feesController;
-use App\Http\Controllers\admin\invoicesController;
-use App\Http\Controllers\admin\orders\orderLogicController;
-use App\Http\Controllers\admin\orders\orderViewController;
-use App\Http\Controllers\admin\packageController;
-use App\Http\Controllers\admin\PaymentController;
-use App\Http\Controllers\admin\productsController;
-use App\Http\Controllers\admin\regionsController;
-use App\Http\Controllers\admin\rolesController;
-use App\Http\Controllers\admin\stageController;
-use App\Http\Controllers\admin\studentsController;
-use App\Http\Controllers\admin\testsController;
-use App\Http\Controllers\admin\transfersController;
-use App\Http\Controllers\admin\userController;
-use App\Http\Controllers\admin\warehouseController;
-use App\Http\Controllers\definitionsController;
-use App\Http\Controllers\settingsController;
-use App\Http\Controllers\users\userController as UsersUserController;
-use App\Http\Controllers\YearController;
-use App\Models\application;
-use App\Models\applicationFee;
-use App\Models\order;
-use App\Models\packageProduct;
-use App\Models\product;
-use App\Models\stage;
 use App\Models\User;
 use App\Models\year;
+use App\Models\order;
+use App\Models\stage;
+use App\Models\product;
+use App\Models\application;
 use Illuminate\Http\Request;
+use App\Models\applicationFee;
+use App\Models\packageProduct;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\YearController;
+use App\Http\Controllers\settingsController;
+use App\Http\Controllers\admin\busController;
+use App\Http\Controllers\admin\feesController;
+use App\Http\Controllers\admin\userController;
+use App\Http\Controllers\admin\rolesController;
+use App\Http\Controllers\admin\stageController;
+use App\Http\Controllers\admin\testsController;
+use App\Http\Controllers\definitionsController;
+use App\Http\Controllers\admin\packageController;
+use App\Http\Controllers\admin\PaymentController;
+use App\Http\Controllers\admin\regionsController;
+use App\Http\Controllers\admin\invoicesController;
+use App\Http\Controllers\admin\productsController;
+use App\Http\Controllers\admin\studentsController;
+use App\Http\Controllers\admin\transfersController;
+use App\Http\Controllers\admin\warehouseController;
+use App\Http\Controllers\admin\applicationsController;
+use App\Http\Controllers\admin\customStatusController;
+use App\Http\Controllers\admin\dynamicFieldsController;
+use App\Http\Controllers\admin\orders\orderViewController;
+use App\Http\Controllers\admin\orders\orderLogicController;
+use App\Http\Controllers\admin\statistics\ApplicationSatiController;
+use App\Http\Controllers\users\userController as UsersUserController;
 
 Route::get('home', function () {
     return view("admin/home");
@@ -458,4 +459,12 @@ Route::middleware('checkRole:dynamic_fields')->prefix("dynamic_fields")->group(f
     Route::DELETE('destroy', [dynamicFieldsController::class, 'destroy']);
     Route::get('changeOrder', [dynamicFieldsController::class, 'changeOrder']);
 
+});
+
+
+
+Route::prefix("statistics")->group(function(){
+    Route::controller(ApplicationSatiController::class)->group(function(){
+        Route::get('/', 'index')->name('indexStatic');
+    });
 });

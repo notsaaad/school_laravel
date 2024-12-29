@@ -330,11 +330,14 @@ return [
     "الحالات الخاصة" => "Custom Status",
     "اسم الحالة" => "Custom Status Name",
 
-    "حالة مخصصة اخري" => "anther Custom Status"
+    "حالة مخصصة اخري" => "anther Custom Status",
 
 
 
+    // الاحصائيات
 
+
+    "الاحصائيات" => "Statistics",
 
 
 

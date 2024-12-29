@@ -456,6 +456,14 @@
 
 
 
+        <x-admin.layout.li class="statistics" path="admin/statistics" :title="trans('words.الاحصائيات')">
+            @slot('icon')
+                <div class="aside_icon">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </div>
+            @endslot
+        </x-admin.layout.li>
+
         <x-admin.layout.li class="logout" path="logout" :title="trans('words.تسجيل الخروج')">
             @slot('icon')
                 <div class="aside_icon">
