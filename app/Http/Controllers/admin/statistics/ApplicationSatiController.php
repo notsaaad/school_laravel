@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\admin\statistics;
 
+use App\Models\year;
 use App\Models\stage;
 use App\Models\application;
 use Illuminate\Http\Request;
@@ -12,6 +13,12 @@ use App\Http\Controllers\Controller;
 class ApplicationSatiController extends Controller
 {
     public function index(){
+
+        $year_id = 2;
+
+        if(isset($_GET['year'])){
+            $year_id = $_GET['year'];
+        }
         $All = array();
         $Stages  = stage::get();
         $counter = count($Stages);
@@ -19,9 +26,9 @@ class ApplicationSatiController extends Controller
             $arr = array();
             $stage_id = $Stages[$i]->id;
             $stage_name = $Stages[$i]->name;
-            $Application = application::where('stage_id', $stage_id)->get();
-            $applicationFess = applicationFee::where('stage_id', $stage_id)->get();
-            $applicationEnrolled = application::where('stage_id', $stage_id)->where('custom_status_id', 7)->get();
+            $Application = application::where('stage_id', $stage_id)->where('year_id', $year_id)->get();
+            $applicationFess = applicationFee::where('stage_id', $stage_id)->where('year_id', $year_id)->get();
+            $applicationEnrolled = application::where('stage_id', $stage_id)->where('custom_status_id', 7)->where('year_id', $year_id)->get();
             $applicationCanceld = application::where('stage_id', $stage_id)->where('custom_status_id', 10)->get();
             // $applicationDate = applicationData::where('stage_id', $stage_id)->get();
             $arr["stage_id"]                            =  $stage_id;
@@ -35,6 +42,17 @@ class ApplicationSatiController extends Controller
 
         }
 
-        return view('admin.statistics.index', compact('All'));
+        $years = year::get();
+
+
+
+        return view('admin.statistics.index', compact('All', 'years','year_id'));
+    }
+
+
+    public function applicationChar(){
+
+        return "Test";
+        return view('admin.statistics.applicationchar');
     }
 }

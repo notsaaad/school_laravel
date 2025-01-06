@@ -7,6 +7,42 @@
 
 @section('content')
 
+    <div class="From">
+        <form action="" method="GET">
+            <select name="year" id="">
+                @foreach ($years as  $year)
+                    <option value="{{$year->id}}" @if($year_id == $year->id)
+                        selected
+                    @endif>{{$year->name}}</option>
+                @endforeach
+            </select>
+            <input type="submit" id="submitfrom1" value="filter">
+        </form>
+
+        <style>
+            .From{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            }
+
+            form{
+                width: 50%;
+                padding: 0 20px;
+                background-color: white;
+                height: 200px;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+            }
+            #submitfrom1{
+
+            }
+        </style>
+
+    </div>
     <table>
         <thead>
             <tr>

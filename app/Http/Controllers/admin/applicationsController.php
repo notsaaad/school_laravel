@@ -272,7 +272,7 @@ class applicationsController extends Controller
             return back()->with("error", "لا يمكن التعديل علي طلب التقديم حاليا");
         }
 
-        if ($application->application_subjects()->where('status', '!=', 'Passed')->exists()) {
+        if ($application->application_subjects()->where('status', '!=', 'Accepted')->exists()) {
             return back()->with("error", "يجب اجتياز الاختبارات اولا");
         }
 
