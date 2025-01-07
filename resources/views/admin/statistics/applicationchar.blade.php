@@ -6,37 +6,44 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @section('content')
-    <canvas id="myChart"></canvas>
-    @push('scripts')
-        <script>
-            const myChart = new Chart(
-                document.getElementById('myChart'),
-                config // We'll add the configuration details later.
-            );
-        </script>
-    @endpush
+    <div class="CharHolder">
+        <canvas width="50%" id="myChart"></canvas>
+    </div>
+
+    <style>
+        .CharHolder{
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
 
 
-    @push('scripts')
-        <script>
-        const data = {
-            labels: @json($data->map(fn ($data) => $data->date)),
-            datasets: [{
-                label: 'Registered users in the last 30 days',
-                backgroundColor: 'rgba(255, 99, 132, 0.3)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: @json($data->map(fn ($data) => $data->aggregate)),
-            }]
-        };
-        const config = {
+    <script type="text/javascript">
+            var labels =  {{ Js::from($labels) }};
+            var users =  {{ Js::from($data) }};
+            var datasets =  {{ Js::from($datasets) }};
+
+
+            const data = {
+            labels: labels,
+
+            datasets: datasets
+            };
+
+            const config = {
             type: 'bar',
-            data: data
-        };
-        const myChart = new Chart(
+            data: data,
+            options: {}
+            };
+
+            const myChart = new Chart(
             document.getElementById('myChart'),
             config
-        );
-    </script>
-    @endpush
+            );
 
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endsection

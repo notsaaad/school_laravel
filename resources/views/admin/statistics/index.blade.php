@@ -7,6 +7,8 @@
 
 @section('content')
 
+    <div><a class="es-btn-primary default" href="{{route('application.char')}}">رسم بياني</a></div>
+
     <div class="From">
         <form action="" method="GET">
             <select name="year" id="">
@@ -51,6 +53,13 @@
                 <th>Assessment fees</th>
                 <th>Assessment Date</th>
                 <th>Enrolled</th>
+                <th>Parents Interview</th>
+                <th>over due date</th>
+                <th>wating MR</th>
+                <th>cancel Application With Refund</th>
+                <th>cancel Application With No Refund</th>
+                <th>Didn't Finish</th>
+                <th>Waiting List</th>
                 <th>Cancled</th>
             </tr>
         </thead>
@@ -63,6 +72,13 @@
                 <td>0</td>
                 <td>{{$stage['applications_Enrolled_Counter']}}</td>
                 <td>{{$stage['applications_Canceld_Counter']}}</td>
+                <td>{{$stage['Parent_interview']}}</td>
+                <td>{{$stage['wating_mr']}}</td>
+                <td>{{$stage['Cancel_with_refund']}}</td>
+                <td>{{$stage['Cancel_with_no_refund']}}</td>
+                <td>{{$stage['DidnotFinish']}}</td>
+                <td>{{$stage['watting_list']}}</td>
+                <td>{{$stage['watting_list']}}</td>
             </tr>
             @empty
             <tr>

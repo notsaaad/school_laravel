@@ -466,6 +466,6 @@ Route::middleware('checkRole:dynamic_fields')->prefix("dynamic_fields")->group(f
 Route::prefix("statistics")->group(function(){
     Route::controller(ApplicationSatiController::class)->group(function(){
         Route::get('/', 'index')->name('indexStatic');
-        Route::get('/Application-Char', 'applicationChar');
+        Route::get('/Application-Char', 'applicationChar')->name('application.char');
     });
 });
