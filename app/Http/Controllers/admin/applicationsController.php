@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers\admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\application;
-use App\Models\applicationData;
-use App\Models\applicationFee;
-use App\Models\applicationSubject;
-use App\Models\definition;
-use App\Models\DynamicField;
-use App\Models\place;
-use App\Models\stage;
 use App\Models\User;
 use App\Models\year;
+use App\Models\place;
+use App\Models\stage;
+use App\Models\definition;
+use App\Models\application;
+use App\Models\DynamicField;
 use Illuminate\Http\Request;
+use App\Models\applicationFee;
+use App\Models\applicationData;
+use App\Models\applicationPayment;
+use App\Models\applicationSubject;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 
 class applicationsController extends Controller
@@ -189,7 +191,27 @@ class applicationsController extends Controller
 
         return view("admin.applications.show", get_defined_vars());
     }
+    function HandelPayment(string $code){
+        $application = application::where('code', $code)->firstOrFail();
+        $methods     = ['cash', 'Bank', 'visa'];
 
+        return view('admin.applications.editPayment', get_defined_vars());
+
+    }
+    public function ChangeStatue(Request $request){
+        $updatePayment = array(
+            'application_id' => $request->application_id,
+            'total' => $request->amout,
+            'method' => $request->method,
+            'user_id' => Auth::id()
+        );
+        $application_payment = applicationPayment::UpdateOrCreate($updatePayment, ['application_id'=>$request->application_id]);
+        DB::table('applications')
+        ->where('id', $request->application_id)
+        ->update(['status'=>'paid']);
+
+        return redirect()->route('application.single', $request->code )->with(['success'=>'تم التسوية بنجاح']);
+    }
 
     public function update(Request $request)
     {

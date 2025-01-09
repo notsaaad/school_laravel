@@ -428,7 +428,9 @@ Route::prefix("applications")->group(function () {
 
 
     Route::post('enableToggle', [applicationsController::class, 'enableToggle']);
-    Route::get('{code}', [applicationsController::class, 'show']);
+    Route::get('{code}', [applicationsController::class, 'show'])->name('application.single');
+    Route::get('{code}/payment', [applicationsController::class, 'HandelPayment'])->name('application.handelPayment');
+    Route::post('ChangeStatue', [applicationsController::class, 'ChangeStatue'])->name('application.ChangeStatue');
 
 
 

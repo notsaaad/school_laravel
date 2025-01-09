@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\applicationPayment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class application extends Model
 {
@@ -73,5 +74,9 @@ class application extends Model
     public function applicationData()
     {
         return $this->hasMany(applicationData::class, 'application_id');
+    }
+
+    public function applicationPayment(){
+        return $this->hasOne(applicationPayment::class , 'application_id');
     }
 }

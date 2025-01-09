@@ -37,11 +37,13 @@
     </script>
 
 @section('content')
+
     <div class="actions border-0">
         <x-admin.layout.back back="admin/applications" title="{{ $application->name }}">
         </x-admin.layout.back>
 
         <div class="actions">
+            <a class="es-btn-primary" href="{{route('application.handelPayment' , $application->code)}}">تسوية المصاريف</a>
             <div class="status_parant">
                 <x-form.select col="" required name="status" label="">
 

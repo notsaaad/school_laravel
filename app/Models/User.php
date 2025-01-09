@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\applicationPayment;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -97,5 +98,9 @@ class User extends Authenticatable
     public function payments()
     {
         return $this->hasMany(feesPayment::class)->orderBy("id", "desc");
+    }
+
+    public function applicationPayment(){
+        return $this->hasMany(applicationPayment::class, 'user_id');
     }
 }
