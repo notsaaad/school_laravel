@@ -66,7 +66,6 @@ class ApplicationSatiController extends Controller
 
 
     public function applicationChar(){
-<<<<<<< HEAD
         $labels = array();
         $place_id = array();
         $datasets = array();
@@ -124,11 +123,5 @@ class ApplicationSatiController extends Controller
         );
 
         return view('admin.statistics.applicationchar', compact('data', 'labels', 'datasets'));
-=======
-        $labels = array('Test1', "test2", "test3");
-        $data = array(20,30,22);
-
-        return view('admin.statistics.applicationchar', compact('data', 'labels'));
->>>>>>> 32f3f66 (try pull)
     }
 }
