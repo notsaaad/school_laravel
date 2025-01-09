@@ -22,13 +22,25 @@
     <script type="text/javascript">
             var labels =  {{ Js::from($labels) }};
             var users =  {{ Js::from($data) }};
+<<<<<<< HEAD
             var datasets =  {{ Js::from($datasets) }};
+=======
+>>>>>>> 32f3f66 (try pull)
 
 
             const data = {
             labels: labels,
+<<<<<<< HEAD
 
             datasets: datasets
+=======
+            datasets: [{
+
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: users,
+            }]
+>>>>>>> 32f3f66 (try pull)
             };
 
             const config = {
