@@ -374,7 +374,12 @@ Route::prefix("buses")->group(function () {
     Route::put('settings', [regionsController::class, 'settings_update']);
     Route::delete('settings/destroy', [regionsController::class, 'settings_destroy']);
 
-    Route::get('orders', [busController::class, 'orders']);
+    Route::prefix('orders')->group(function(){
+        Route::get('/', [busController::class, 'orders'])->name('bus.orders');
+        Route::get('{order}/Edit', [busController::class, 'OrderEdit'])->name('bus.order.edit');
+        Route::post('orderChangeStatue', [busController::class, 'ChangeStatue'])->name('bus.order.ChangeStatue');
+        Route::get('{order}/Delete', [busController::class, 'DeleteBusOrder'])->name('bus.order.Delete');
+    });
 });
 
 

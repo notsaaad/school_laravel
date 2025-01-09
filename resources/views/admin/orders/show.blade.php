@@ -582,7 +582,7 @@
                             <div class="history">
                                 <span style="font-weight: bold;">{{ $history->amount }} {{ trans('words.ج') }}</span>
                                 <span>{{ $history->type }}</span>
-                                <span>{{ $history->auth_user->name }}</span>
+                                <span>{{ $history->auth_user->name  ?? ''}}</span>
                                 <span style="color: #777;">{{ fixdate($history->created_at) }}</span>
 
                             </div>

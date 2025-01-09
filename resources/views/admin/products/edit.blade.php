@@ -9,6 +9,7 @@
 
 
 @section('content')
+
     <div class="actions border-0">
         <x-admin.layout.back back="admin/products"
             title=" {{ trans('words.btn_update') }} {{ $product->name }}"></x-admin.layout.back>
@@ -42,6 +43,8 @@
 
 
         </x-form.select>
+
+
 
 
 

@@ -29,7 +29,15 @@
 
                 <tr>
                     <th>#</th>
-
+                    <th>اسم الطالب</th>
+                    <th>ايميل الطالب</th>
+                    <th>هاتف الطالب</th>
+                    <th>العنوان</th>
+                    <th>الاتوبيس</th>
+                    <th>الرحلة</th>
+                    <th>السعر</th>
+                    <th>الحالة</th>
+                    <th>تعديل</th>
                 </tr>
 
             </thead>
@@ -39,6 +47,20 @@
                 @foreach ($orders as $order)
                     <tr>
                         <td>{{ $loop->index + 1 }}</td>
+                        <td>{{$order->user->name ?? ''}}</td>
+                        <td>{{$order->user->email ?? ''}}</td>
+                        <td>{{$order->user->mobile ?? ''}}</td>
+                        <td>{{$order->address ?? ''}}</td>
+                        <td>{{$order->bus->name ?? ''}}</td>
+                        <td>{{$order->title ?? ''}}</td>
+                        <td>{{$order->price ?? ''}}</td>
+                        <td>{{$order->status ?? ''}}</td>
+                        <td>
+                            <div class="table-action">
+                                <a href="{{route('bus.order.edit', $order->id)}}" class="btn btn-primary">تعديل</a>
+                                <a href="{{route('bus.order.Delete', $order->id)}}" class="btn btn-danger">مسح</a>
+                            </div>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

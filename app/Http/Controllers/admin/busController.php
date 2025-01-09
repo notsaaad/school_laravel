@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers\admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\bus;
-use App\Models\busOrder;
+use App\Models\User;
 use App\Models\region;
+use App\Models\busOrder;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Admin\BusOrders\Canceld;
+use App\Mail\Admin\BusOrders\Confrim;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Arr;
 
 class busController extends Controller
 {
@@ -168,8 +172,50 @@ function settings(bus $bus)
 
 function orders()
 {
-    $orders = busOrder::simplePaginate(50);
+    $orders = busOrder::with(['user', 'bus'])->simplePaginate(50);
 
     return view("admin.bus.orders", get_defined_vars());
 }
+
+
+    function OrderEdit(busOrder $order){
+
+        $order = busOrder::with(['user', 'bus'])->where('id', $order->id)->get();
+        $status = ['pending','not answer','cancelled','confirmed','paid'];
+        // return $order;
+        return view('admin.bus.orderEditForm', compact('order', 'status'));
+
+    }
+
+    function ChangeStatue(Request $request){
+
+        DB::table('bus_orders')
+        ->where('id',$request->busOrder_id)
+        ->update(['status'=>$request->status]);
+        $Order_id = $request->busOrder_id;
+        $user_id = DB::table('bus_orders')
+        ->select('user_id')
+        ->where('id', $Order_id)
+        ->get();
+        $user_id =  $user_id[0]->user_id;
+        $user = User::where('id', $user_id)->first();
+        $user_email =  $user->email;
+
+
+        if($request->status == "confirmed"){
+            Mail::to($user_email)->send(new Confrim);
+        }elseif($request->status == "cancelled"){
+            Mail::to($user_email)->send(new Canceld);
+        }
+
+        return redirect()->route('bus.orders')->with(['success'=>'تم تغير حالة الطلب بنجاح']);
+    }
+
+    function DeleteBusOrder(busOrder $order){
+        DB::table('bus_orders')
+        ->where('id', $order->id)
+        ->delete();
+
+        return redirect()->route('bus.orders')->with(['success'=> 'تم مسح الطلب بنجاح']);
+    }
 }
