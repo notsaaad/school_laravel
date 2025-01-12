@@ -121,6 +121,24 @@
     @include('admin.inc.scripts')
     @include('admin/inc/errors')
     @yield('js')
+    {{-- <script>
+
+        $('.modelSelect').select2();
+
+
+        function show_new_value_model(e) {
+
+            event.stopPropagation();
+            let element = e;
+            let data_name = element.getAttribute('data-name')
+            let data_stock = element.getAttribute('data-stock')
+            let data_id = element.getAttribute('data-id')
+
+            $("#new_value_input").val(data_name)
+            $("#new_stock_input").val(data_stock)
+            $("input[name='value_id']").val(data_id)
+        }
+    </script> --}}
 </body>
 
 </html>

@@ -6,6 +6,8 @@
 
 
 @section('content')
+    <x-admin.layout.back back="admin/applications/{{$application->code}}"  title="{{$application->name}}"></x-admin.layout.back>
+
     <div class="container">
         <form action="{{route('application.ChangeStatue')}}" method="POST">
             @csrf
@@ -21,4 +23,25 @@
             <button class="es-btn-primary default">تسوية المدفوعات</button>
         </form>
     </div>
+
+        @section('js')
+        <script>
+
+        $('.modelSelect').select2();
+
+
+        function show_new_value_model(e) {
+
+            event.stopPropagation();
+            let element = e;
+            let data_name = element.getAttribute('data-name')
+            let data_stock = element.getAttribute('data-stock')
+            let data_id = element.getAttribute('data-id')
+
+            $("#new_value_input").val(data_name)
+            $("#new_stock_input").val(data_stock)
+            $("input[name='value_id']").val(data_id)
+        }
+    </script>
+    @endsection
 @endsection

@@ -194,7 +194,7 @@ class applicationsController extends Controller
     function HandelPayment(string $code){
         $application = application::where('code', $code)->firstOrFail();
         $methods     = ['cash', 'Bank', 'visa'];
-
+        // return get_defined_vars();
         return view('admin.applications.editPayment', get_defined_vars());
 
     }
@@ -270,6 +270,25 @@ class applicationsController extends Controller
         return Redirect::back()->with("success", "تم الازالة بنجاح");
     }
 
+    public function chnageStatueAfter(string $code){
+        $application = application::where('code', $code)->get();
+        // return get_defined_vars();
+        return view('admin.applications.ChangeStatue', compact('application'));
+    }
+
+    public function HandelChangeStatue(Request $requset){
+        $state = application::where('code', $requset->code)
+        ->update([
+            'status' => $requset->statue,
+            'custom_status_id' => NULL
+        ]);
+
+        if($state){
+            return redirect()->route('application.single', $requset->code)->with(['success'=> 'تم تغير الحالة بنجاح']);
+        }else{
+            return redirect()->route('application.single', $requset->code)->with(['error'=> 'حدث خطأ ما']);
+        }
+    }
 
 
     public function update_subject(Request $request)

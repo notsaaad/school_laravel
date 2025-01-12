@@ -44,6 +44,7 @@
 
         <div class="actions">
             <a class="es-btn-primary" href="{{route('application.handelPayment' , $application->code)}}">تسوية المصاريف</a>
+            <a class="es-btn-primary" href="{{route('application.chnageStatueAfter' , $application->code)}}">تغير الحالة</a>
             <div class="status_parant">
                 <x-form.select col="" required name="status" label="">
 

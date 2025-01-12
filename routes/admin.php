@@ -431,7 +431,8 @@ Route::prefix("applications")->group(function () {
     Route::get('{code}', [applicationsController::class, 'show'])->name('application.single');
     Route::get('{code}/payment', [applicationsController::class, 'HandelPayment'])->name('application.handelPayment');
     Route::post('ChangeStatue', [applicationsController::class, 'ChangeStatue'])->name('application.ChangeStatue');
-
+    Route::get('{code}/App-change-statue', [applicationsController::class, 'chnageStatueAfter'])->name('application.chnageStatueAfter');
+    Route::post('AfterChangeStatue', [applicationsController::class, 'HandelChangeStatue'])->name('application.handelStatue');
 
 
 
