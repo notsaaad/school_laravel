@@ -551,14 +551,12 @@
                                         @endcan
                                         @if($detail->picked == 1)
                                                 <td>
-                                                    @php
-                                                        echo "<script>console.log($detail)</script>"
-                                                    @endphp
                                                     <form action="{{route('order.returnItem')}}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="code" value="{{$order->reference}}">
                                                         <input type="hidden" name="price" value="-{{$detail->product->sell_price}}">
-                                                        <input type="hidden" name="id" value="{{$detail->id}}">  {{-- order Detail id --}}
+                                                        <input type="hidden" name="order_detail_id" value="{{$detail->id}}">  {{-- order Detail id --}}
+                                                        <input type="hidden" name="order_id" value="{{$order->id}}">  {{-- order Detail id --}}
                                                         <div style="display: flex;justify-content: center;align-items: center;flex-direction: column;">
                                                             <x-form.select  required name="payment_method" label="وسيلة الدفع">
 
@@ -572,7 +570,7 @@
                                                                 {{$detail->product->sell_price}}
                                                             </p>
                                                         </div>
-
+                                                    </form>
                                                 </td>
                                         @endif
 

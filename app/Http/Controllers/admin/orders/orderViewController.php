@@ -5,8 +5,10 @@ namespace App\Http\Controllers\admin\orders;
 use App\Models\User;
 use App\Models\order;
 use Illuminate\Http\Request;
+use App\Models\paymentHistory;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class orderViewController extends Controller
 {
@@ -32,7 +34,7 @@ class orderViewController extends Controller
         foreach ($orders as $order) {
             DB::table('order_datails')->where('id', $order)->update(['picked'=>1, 'picked_at'=> $time ]);
         }
-        return redirect()->route('order.single_order', $code)->with(['success'=>'تم تسليم جميع المنتجات بنجاح']);
+        return redirect()->route('order.single_order', $code)->with(['success'=>'تم التسليم بنجاح']);
     }
     public function GetOrderDetailsAjax($id)
     {
@@ -53,7 +55,26 @@ class orderViewController extends Controller
 
     }
     function returnItem(Request $request){
-        return $request;
+        $order_id        = $request->order_id;
+        $order_detail_id = $request->order_detail_id;
+        $code            = $request->code;
+        $price           = $request->price;
+        $payment_method  = $request->payment_method;
+        $user_id = Auth::user()->id;
+        $create_arr = array(
+            "amount"=>(int)$price,
+            "order_id"=>$order_id,
+            "type"=>$payment_method,
+            "auth"=>$user_id
+        );
+        $paymentHistory = paymentHistory::create($create_arr);
+        // DB::table('order_datails')->where('id', $order_detail_id)->delete();
+        $order = DB::table('orders')->where('id', $order_id)->first();
+        $old_price = $order->price;
+        $new_price = $old_price + (int)$price;
+        return $new_price;
+
+        return redirect()->route('order.single_order', $code)->with(['success'=>'طب استرجاع المنتج بنجاح']);
     }
     function search(Request $request)
     {
