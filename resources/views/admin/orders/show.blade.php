@@ -415,6 +415,9 @@
                             <thead>
 
                                 <tr>
+                                    @if($order->status != 'picked')
+                                    <th>#</th>
+                                    @endif
                                     <th> {{ trans('words.صورة المنتج') }}</th>
                                     <th>{{ trans('words.اسم المنتج') }}</th>
                                     <th> {{ trans('words.الكمية') }}</th>
@@ -442,9 +445,13 @@
                                 @foreach ($order->details as $detail)
                                     <tr>
 
+                                        @if($order->status != 'picked' &&  $detail->picked == 0 )
+                                        <td><input type="checkbox" class="check_order_id" id="{{$detail->id}}" onChange="CheckBTN(this.id)" order="{{$detail->id}}"></td>
+                                        @endif
 
 
                                         @php
+
                                             if (isset($detail->product->img)) {
                                                 $img = str_replace('public', 'storage', $detail->product->img);
                                                 $img = asset("$img");
@@ -542,7 +549,32 @@
                                                 <td></td>
                                             @endif
                                         @endcan
+                                        @if($detail->picked == 1)
+                                                <td>
+                                                    @php
+                                                        echo "<script>console.log($detail)</script>"
+                                                    @endphp
+                                                    <form action="{{route('order.returnItem')}}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="code" value="{{$order->reference}}">
+                                                        <input type="hidden" name="price" value="-{{$detail->product->sell_price}}">
+                                                        <input type="hidden" name="id" value="{{$detail->id}}">  {{-- order Detail id --}}
+                                                        <div style="display: flex;justify-content: center;align-items: center;flex-direction: column;">
+                                                            <x-form.select  required name="payment_method" label="وسيلة الدفع">
 
+                                                                <option @selected('visa')  value="visa">visa</option>
+                                                                <option  @selected('bank')  value="bank">bank</option>
+                                                                <option  @selected('cash') selected  value="cash">cash</option>
+
+                                                            </x-form.select>
+                                                            <button class='btn btn-danger'>استرجاع القطعة</button>
+                                                            <p title="المبلغ" class="small-product-price text-danger">
+                                                                {{$detail->product->sell_price}}
+                                                            </p>
+                                                        </div>
+
+                                                </td>
+                                        @endif
 
 
 
@@ -553,7 +585,13 @@
 
                             </tbody>
                         </table>
-
+                        <form action="{{route('order.CustomDelivering')}}" method="POST">
+                            @csrf
+                            <input id="inputsOrders" type="hidden" name="orders" value="">
+                            <input type="hidden" name="code" value="{{$order->reference}}">
+                            <input type="hidden" name="id" value="{{$order->id}}">
+                            <button id="Custom_Order_Deliverd"  style="display:none;" class="btn btn-primary">تسليم </button>
+                        </form>
                     </div>
                 </div>
 
@@ -946,4 +984,41 @@
             });
         });
     </script>
+    <script>
+        function CheckBTN(id){
+            let countCheckedBox = $('.check_order_id:checked').length;
+            if(countCheckedBox > 0){
+                $('#Custom_Order_Deliverd').show();
+            }else{
+                $('#Custom_Order_Deliverd').hide();
+            }
+            var arr = [];
+            var checked = $('.check_order_id:checked').each(function (index){
+
+            arr.push(this.id);
+            });
+            var paramter = arr.join('-');
+            $('#inputsOrders').val(paramter);
+        }
+
+
+    </script>
+            <script>
+
+                $('.modelSelect').select2();
+
+
+                function show_new_value_model(e) {
+
+                    event.stopPropagation();
+                    let element = e;
+                    let data_name = element.getAttribute('data-name')
+                    let data_stock = element.getAttribute('data-stock')
+                    let data_id = element.getAttribute('data-id')
+
+                    $("#new_value_input").val(data_name)
+                    $("#new_stock_input").val(data_stock)
+                    $("input[name='value_id']").val(data_id)
+                }
+            </script>
 @endsection

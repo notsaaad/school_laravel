@@ -24,7 +24,16 @@ class orderViewController extends Controller
 
         return view("admin.orders.show", compact("order"));
     }
-
+    function CustomDelivering(Request $request){
+        $OrginalRequestOrder = $request->orders;
+        $code = $request->code;
+        $orders = explode('-', $OrginalRequestOrder);
+        $time = now();
+        foreach ($orders as $order) {
+            DB::table('order_datails')->where('id', $order)->update(['picked'=>1, 'picked_at'=> $time ]);
+        }
+        return redirect()->route('order.single_order', $code)->with(['success'=>'تم تسليم جميع المنتجات بنجاح']);
+    }
     public function GetOrderDetailsAjax($id)
     {
         try {
@@ -42,6 +51,9 @@ class orderViewController extends Controller
         DB::table('orders')->where('id', $id)->update(['status' => 'picked', 'sending'=> 1, 'received'=>1]);
         return redirect()->route('order.single_order', $reference)->with(['success'=>'تم تسليم جميع المنتجات بنجاح']);
 
+    }
+    function returnItem(Request $request){
+        return $request;
     }
     function search(Request $request)
     {
