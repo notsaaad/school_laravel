@@ -185,8 +185,8 @@ Route::prefix("orders")->group(function () {
     Route::middleware("checkRole:show_orders")->get('/', [orderViewController::class, 'index']);
     Route::middleware("checkRole:show_orders")->get('search', [orderViewController::class, 'search']);
 
-    Route::get('{reference}',  [orderViewController::class, 'show']);
-
+    Route::get('{reference}',  [orderViewController::class, 'show'])->name('order.single_order');
+    Route::POST('DeliverAll', [orderViewController::class, 'DeliverdAll'])->name('order.DeliverdAll');
 
 
     Route::middleware("checkRole:return_requested")->post('changeOrderStatus',  [orderLogicController::class, 'changeOrderStatus']);

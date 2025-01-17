@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\admin\orders;
 
-use App\Http\Controllers\Controller;
-use App\Models\order;
 use App\Models\User;
+use App\Models\order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class orderViewController extends Controller
 {
@@ -13,7 +14,7 @@ class orderViewController extends Controller
     {
 
         $orders = order::paginate(50);
-        // return $orders[0]->user;
+
         return view("admin/orders/index", compact("orders"));
     }
 
@@ -33,7 +34,15 @@ class orderViewController extends Controller
             return json(["status" => "error", "message" => "هناك خطأ ما"]);
         }
     }
+    function DeliverdAll(Request $request){
+        $id = $request->id;
+        $reference = $request->code;
 
+        $orderDetails = DB::table('order_datails')->where('order_id', $id)->update(['picked'=> 1]);
+        DB::table('orders')->where('id', $id)->update(['status' => 'picked', 'sending'=> 1, 'received'=>1]);
+        return redirect()->route('order.single_order', $reference)->with(['success'=>'تم تسليم جميع المنتجات بنجاح']);
+
+    }
     function search(Request $request)
     {
 

@@ -302,6 +302,15 @@
             </div>
 
             <div class="actions">
+                @if($order->status != 'picked')
+                    <form action="{{route('order.DeliverdAll')}}" method="post">
+                        @csrf
+                        <input type="hidden" name="code" value="{{$order->reference}}">
+                        <input type="hidden" name="id" value="{{$order->id}}">
+                        <button class="btn btn-primary">تسليم الكل</button>
+                    </form>
+
+                @endif
 
                 <x-form.link class="es-btn-primary" title="{{trans('words.اضافة منتج')}}"
                     path="admin/items/{{ $order->user_id }}?addTo={{ $order->reference }}"></x-form.link>
