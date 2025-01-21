@@ -23,6 +23,7 @@ use App\Http\Controllers\definitionsController;
 use App\Http\Controllers\admin\packageController;
 use App\Http\Controllers\admin\PaymentController;
 use App\Http\Controllers\admin\regionsController;
+use App\Http\Controllers\admin\ExpenessController;
 use App\Http\Controllers\admin\invoicesController;
 use App\Http\Controllers\admin\productsController;
 use App\Http\Controllers\admin\studentsController;
@@ -222,7 +223,8 @@ Route::prefix("settings")->group(function () {
 
 
 
-    Route::get('/', [settingsController::class, 'index']);
+    Route::get('/', [settingsController::class, 'index'])->name('admin.setting.index');
+    Route::POST('/ChangeYear', [settingsController::class, 'changeYear'])->name('admin.setting.changeYear');
     Route::middleware('checkRole:branding')->get('branding', function () {
         return view("admin.settings.branding");
     });
@@ -477,5 +479,11 @@ Route::prefix("statistics")->group(function(){
     Route::controller(ApplicationSatiController::class)->group(function(){
         Route::get('/', 'index')->name('indexStatic');
         Route::get('/Application-Char', 'applicationChar')->name('application.char');
+    });
+});
+
+Route::prefix("expenses")->group(function(){
+    Route::controller(ExpenessController::class)->group(function(){
+        Route::get('/', 'index')->name('admin.Expenses.index');
     });
 });

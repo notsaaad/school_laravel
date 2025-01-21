@@ -73,7 +73,9 @@
     <title>{{ trans('words.settings') }}</title>
 @endsection
 
+@php
 
+@endphp
 @section('content')
     <div class="actions border-0">
 
@@ -81,6 +83,19 @@
     </div>
 
     <div class="row g-3 ">
+        <form action="{{route('admin.setting.changeYear')}}" method="post">
+            @csrf
+            <h2>السنة الحالة هي : {{$current_year}}</h2>
+            <x-form.select col="col-lg-3 col-6"  name="year" label="السنة الحالة">
+
+                @foreach ($years as $year)
+                    <option @selected($year->current == 'yes') value="{{$year->id}}">{{ $year->name }}</option>
+                    @endforeach
+
+
+                </x-form.select>
+                <button class="es-btn-primary">تغير السنة</button>
+        </form>
         @can('has', 'branding')
             <div data-title="العلامة التجارية" class="col-lg-3 col-md-6 col-12">
                 <x-tool title="{{ trans('words.brand') }}" dis="{{ trans('words.brand_dis') }}" icon="branding.png"
@@ -134,4 +149,24 @@
     <script>
         $('aside .settings').addClass('active');
     </script>
+
+        <script>
+
+        $('.modelSelect').select2();
+
+
+        function show_new_value_model(e) {
+
+            event.stopPropagation();
+            let element = e;
+            let data_name = element.getAttribute('data-name')
+            let data_stock = element.getAttribute('data-stock')
+            let data_id = element.getAttribute('data-id')
+
+            $("#new_value_input").val(data_name)
+            $("#new_stock_input").val(data_stock)
+            $("input[name='value_id']").val(data_id)
+        }
+    </script>
+
 @endsection

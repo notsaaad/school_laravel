@@ -2,16 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
-use App\Models\setting;
+use App\Models\year;
 use App\Models\email;
+use App\Models\setting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class settingsController extends Controller
 {
     public function index()
     {
-        return view("admin/settings/index");
+        $current_year = setting::where('key', 'year')->first();
+
+        $value = $current_year->value;
+        $years        = year::get();
+        $current_year = "";
+        foreach($years as $year){
+            if($year->id == $value){
+                $year->currrent = "yes";
+                $current_year = $year->name;
+            }else{
+                $year->current = "no";
+            }
+        }
+
+
+        return view("admin/settings/index", compact('years', 'current_year'));
+    }
+    function changeYear(Request $request){
+        $year = $request->year;
+        DB::table('settings')->where('key', 'year')->update(['value'=>$year]);
+        return redirect()->back()->with(['success'=>'تم تغير السنة بنجاح']);
     }
 
     function update(Request $request)

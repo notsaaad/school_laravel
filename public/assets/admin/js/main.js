@@ -63,6 +63,10 @@ $("#flip-applications").click(function () {
     $("#panel-applications").slideToggle(200);
     $("#flip-applications span.menu-arrow ").toggleClass("down");
 });
+$("#flip-expeness").click(function () {
+    $("#panel-expeness").slideToggle(200);
+    $("#flip-expeness span.menu-arrow ").toggleClass("down");
+});
 
 $(".checkThis").on("keyup", function () {
     check($(this).closest("form"));
