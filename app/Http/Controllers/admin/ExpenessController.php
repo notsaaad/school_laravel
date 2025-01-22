@@ -9,7 +9,8 @@ use App\Http\Controllers\Controller;
 class ExpenessController extends Controller
 {
     function index(){
-        $years = year::get();
-        return get_defined_vars();
+        $years = year::whereDoesntHave('yearcost')->get();
+        // return get_defined_vars();
+        return view('admin.Expeness.index', get_defined_vars());
     }
 }

@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\yearcost;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class year extends Model
 {
@@ -20,5 +21,11 @@ class year extends Model
         static::addGlobalScope('order', function ($builder) {
             $builder->orderBy('order', 'asc');
         });
+    }
+
+
+    public function yearcost()
+    {
+        return $this->hasMany(yearcost::class, 'year_id');
     }
 }

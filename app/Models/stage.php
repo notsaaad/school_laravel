@@ -20,4 +20,16 @@ class stage extends Model
             $builder->orderBy('order', 'asc');
         });
     }
+
+
+
+    /**
+     * Get all of the yearcost_stage for the stage
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function yearcost_stage(): HasMany
+    {
+        return $this->hasMany(Comment::class, 'stage_id');
+    }
 }

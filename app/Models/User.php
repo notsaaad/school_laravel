@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use App\Models\feesPayment;
 use App\Models\applicationPayment;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -102,5 +103,16 @@ class User extends Authenticatable
 
     public function applicationPayment(){
         return $this->hasMany(applicationPayment::class, 'user_id');
+    }
+
+
+    /**
+     * Get all of the student_pay for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function student_pay(): HasMany
+    {
+        return $this->hasMany(student_pay::class, 'student_id');
     }
 }
