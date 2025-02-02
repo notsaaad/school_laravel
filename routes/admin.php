@@ -485,5 +485,6 @@ Route::prefix("statistics")->group(function(){
 Route::prefix("expenses")->group(function(){
     Route::controller(ExpenessController::class)->group(function(){
         Route::get('/', 'index')->name('admin.Expenses.index');
+        Route::post('/storeyearcost', 'storeyearcost')->name('admin.Expenses.store.yearcost');
     });
 });

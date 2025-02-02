@@ -11,18 +11,21 @@
 
 
     <div class="container">
-        <form action="" method="POST">
+        <form action="{{route('admin.Expenses.store.yearcost')}}" method="POST">
             @csrf
             @method('POST')
-            <input type="hidden" name="busOrder_id" value="">
             <x-form.select col="col-lg-3 col-6"  name="year" label="اختر السنة">
-
                 @foreach ($years as $year)
-                    <option value="{{$year}}">{{$year}}</option>
+                    <option value="{{$year->id}}">{{$year->name}}</option>
                 @endforeach
 
 
             </x-form.select>
+            <div class="row g-2">
+                <div class="col-4 mb-2">
+                    <input type="number" required  name="installment_count" placeholder="عدد الاقساط" >
+                </div>
+            </div>
 
             <button class="es-btn-primary" id="submitBtn"> اضافة مصاريف دراسية</button>
         </form>
