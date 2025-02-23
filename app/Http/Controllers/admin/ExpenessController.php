@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Models\year;
 use App\Models\stage;
+use App\Models\yearcost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -34,6 +35,98 @@ class ExpenessController extends Controller
             );
             DB::table('yearcost_stage')->insert($arr);
         }
-        return Redirect::back()->with(['success'=>"تم انشاء السنة بنجاح"]);
+        return redirect()->route('admin.Expenses.installment', $yearcost_id)->with(['success'=> 'تم الاضافة بنجاح']);
     }
+
+    function Handelinstallment(int $yearcost_id){
+        $row = DB::table('yearcost')->where('id' ,$yearcost_id )->get();
+        $installment_count =  $row[0]->installment_count;
+        return view('admin.Expeness.installlment', compact('yearcost_id', 'installment_count'));
+    }
+
+    function setInstallment(Request $request){
+        $data = $request->validate([
+            "per" => "required|array",
+            "per.*" => "integer"
+        ],
+        [
+            'per.Numeric' => 'يجب ان تكون النسب ارقام',
+            'per.*.integer' => 'يجب ان تكون النسب ارقام',
+
+        ]
+    );
+        $sum = 0;
+
+
+        foreach ($request->per as $per) {
+            $sum += $per;
+        }
+
+        if($sum != 100){
+            return redirect()->back()->with(['error'=> 'يجب ان يكون مجموع النسب 100']);
+        }
+
+        foreach ($request->per as $per) {
+            $arr = array(
+                'per' => $per,
+                'yearcost_id' => $request->yearcost_id
+            );
+            DB::table('installment')->insert($arr);
+        }
+
+        return redirect()->route('admin.Expenses.yearcost_stage', $request->yearcost_id)->with(['success'=> 'تم الاضافة بنجاح']);
+    }
+
+
+    function HandelYearcostStage(int $yearcost_id){
+        $yearcost_stages = DB::table('yearcost_stage')->where('yearcost_id', $yearcost_id)->get();
+        $yearcost = DB::table('yearcost')->where('id' , $yearcost_id)->get();
+        $year_id = $yearcost[0]->year_id;
+        $year = DB::table('years')->where('id' , $year_id)->get();
+        $year_name = $year[0]->name;
+        $yearcost_stages = $yearcost_stages->toArray();
+        $arr = array();
+        for($i=0; $i<count($yearcost_stages); $i++){
+            $stage = DB::table('stages')->where('id', $yearcost_stages[$i]->stage_id)->get();
+            $stage_name = $stage[0]->name;
+            $yearcost_stages[$i]->stage_name = $stage_name;
+
+        }
+        return view('admin.Expeness.yearcost_stage', compact('yearcost_stages', 'year_name'));
+    }
+    function storeyearcostupdate(Request $request){
+        return $request;
+    }
+
+    function add_new_system(){
+        return view('admin.Expeness.addsystem');
+    }
+    function store_new_system(Request $request){
+        DB::table('system')->insert(["name"=>$request->name]);
+        return redirect()->route('admin.Expenses.add.system')->with(['success'=>'تم اضافة النظام الدراسي بنجاح']);
+    }
+
+    function view_new_system(){
+        $systems = DB::table('system')->get();
+        return view('admin.Expeness.viewsystem', compact('systems'));
+    }
+
+    function Edit_system_from(int $id){
+        $systems = DB::table('system')->get()->where('id', $id);
+        return view('admin.Expeness.edit_form_system',compact('systems'));
+    }
+
+    function Edit_system(Request $request){
+        $id = $request->id;
+        DB::table('system')->where('id', $id)->update(['name'=>$request->name]);
+        return redirect()->route('admin.Expenses.view.system')->with(['success'=>'تم التعديل النظام الدراسي بنجاح']);
+    }
+
+    function Delete_system(Request $request){
+        $id = $request->id;
+        DB::table('system')->where('id', $id)->delete();
+        return redirect()->route('admin.Expenses.view.system')->with(['success'=>'تم المسح النظام الدراسي بنجاح']);
+    }
+
 }
+

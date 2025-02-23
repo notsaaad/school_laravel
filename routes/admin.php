@@ -486,5 +486,17 @@ Route::prefix("expenses")->group(function(){
     Route::controller(ExpenessController::class)->group(function(){
         Route::get('/', 'index')->name('admin.Expenses.index');
         Route::post('/storeyearcost', 'storeyearcost')->name('admin.Expenses.store.yearcost');
+        Route::get('/installment/{id}', 'Handelinstallment')->name('admin.Expenses.installment');
+        Route::post('/Setinstallment', 'setInstallment')->name('admin.Expenses.storeintallment');
+        Route::get('/yearcoststage/{id}', 'HandelYearcostStage')->name('admin.Expenses.yearcost_stage');
+        Route::post('/Set-installment', 'storeyearcostupdate')->name('admin.Expenses.store.yearcost_stage');
+        Route::get('/add-system', 'add_new_system')->name('admin.Expenses.add.system');
+        Route::post('/storeSystem', 'store_new_system')->name('admin.Expenses.store.system');
+        Route::get('/view-systems', 'view_new_system')->name('admin.Expenses.view.system');
+        Route::get('/EditSystem/{id}', 'Edit_system_from')->name('admin.Expenses.viewform.eidt');
+        Route::post('/Edit_system', 'Edit_system')->name('admin.Expenses.edit.system');
+        Route::post('/DeleteSystem', 'Delete_system')->name('admin.Expenses.delete.system');
     });
 });
+
+
