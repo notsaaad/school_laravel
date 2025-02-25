@@ -8,34 +8,58 @@
 
 
 @section('content')
-
+    <style>
+        .table-installment-container{
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+            padding:20px;
+            margin: 20px 0;
+        }
+        .table-installment-container h4{
+            text-align: center;
+        }
+    </style>
 
     <div class="container">
         <form action="{{route('admin.Expenses.store.yearcost_stage')}}" method="POST">
             @csrf
             @method('POST')
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>المرحلة الدارسية</th>
-                        <th>مصاريف السنة</th>
-                        <th>مصاريف الكتب</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for($i = 0; $i <count($yearcost_stages); $i++)
+            @foreach ($data as $row )
+            <div class="table-installment-container">
+                <h4>اضافة مصاريف لنظام {{$row['system_name']}}</h4>
+                <table>
+                    @php
+                        $i = 0;
+                    @endphp
+                    <thead>
+                        <tr>
+                            <th>المرحلة الدارسية</th>
+                            <th>مصاريف السنة</th>
+                            <th>الاقساط</th>
+                            <th>مصاريف الكتب</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($row['stages'] as  $stage)
                         <tr>
                             <td>
-                                <input type="hidden" name="row[{{$i}}][id]" value="{{$yearcost_stages[$i]->id}}">
-                                {{$yearcost_stages[$i]->stage_name}}
+                                <input type="hidden" name="row[{{$i}}][id]" value="{{$stage->id}}">
+                                {{$stage->stage_name}}
                             </td>
-                            <td><input type="number" name="row[{{$i}}][cash]" value="{{$yearcost_stages[$i]->cash}}"></td>
-                            <td><input type="number" name="row[{{$i}}][book]" value="{{$yearcost_stages[$i]->book}}"></td>
+                            <td><input type="number" name="row[{{$i}}][cash]" value="{{$stage->cash}}"></td>
+                            <td><input type="number" name="row[{{$i}}][installment]" value="{{$stage->installment}}"></td>
+                            <td><input type="number" name="row[{{$i}}][book]" value="{{$stage->book}}"></td>
                         </tr>
-                    @endfor
-                </tbody>
-            </table>
+                        @php
+                            $i++;
+                        @endphp
+                        @endforeach
+
+                    </tbody>
+                </table>
+            </div>
+            @endforeach
+
+
 
             <button class="es-btn-primary" id="submitBtn">حفظ</button>
         </form>

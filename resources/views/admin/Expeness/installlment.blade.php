@@ -14,6 +14,7 @@
         <form action="{{route('admin.Expenses.storeintallment')}}" method="POST">
             @csrf
             @method('POST')
+            <input type="hidden" name="year_id" value={{$year_id}}>
             @for ($i = 0;$i< $installment_count; $i++ )
 
             <x-form.input required col="col-4" label="القسط {{$i + 1}}" @old name="per[{{$i}}]"></x-form.input>
