@@ -27,7 +27,7 @@
         </x-admin.layout.back>
 
 
-        @if (auth()->user()->role == 'admin' && is_null($invoice->warehouse->deleted_at))
+        @if (auth()->user()->role == 'admin' && is_null(optional($invoice->warehouse)->deleted_at))
             <div class="d-flex gap-2">
                 <x-cr_button title="إضافة حقل جديد"></x-cr_button>
             </div>
@@ -71,7 +71,7 @@
                             $name = $item->product->name . ' ' . $item->variant->value;
                         @endphp
 
-                        @if (auth()->user()->role == 'admin' && is_null($invoice->warehouse->deleted_at))
+                        @if (auth()->user()->role == 'admin' && is_null((optional($invoice->warehouse)->deleted_at)))
                             <x-td_end id="{{ $item->id }}" name="{{ $name }}">
 
                             </x-td_end>

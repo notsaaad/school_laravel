@@ -233,7 +233,7 @@
 <body>
 
 
-
+    @if($application->can_share == 'yes')
     <form action="/applications/{{$application->code}}" method="post" class="position-relative">
 
         @csrf
@@ -313,8 +313,11 @@
 
 
     </form>
-
-
+    @else
+      <div class="alert alert-success p-4" role="alert">
+          تم الاجابة علي هذا الطلب مسبقا
+      </div>
+    @endif
 
 
 

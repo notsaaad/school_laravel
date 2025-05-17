@@ -86,14 +86,21 @@
         </x-form.input>
 
 
-
-        <x-form.select col="col-lg-3 col-6" reqiured name="stage_id" label="{{ trans('words.المرحلة') }}">
-
+        <x-form.select
+            col="col-lg-3 col-6"
+            required
+            name="stage_id[]"
+            label="{{ trans('words.المرحلة') }}"
+            multiple
+        >
             @foreach ($stages as $stage)
-                <option @selected($stage->id == $package->stage_id) value="{{ $stage->id }}">{{ $stage->name }}</option>
+                <option
+                    value="{{ $stage->id }}"
+                    @if(isset($package) && $package->stages->contains($stage->id)) selected @endif
+                >
+                    {{ $stage->name }}
+                </option>
             @endforeach
-
-
         </x-form.select>
 
 
@@ -237,6 +244,21 @@
                     checkbox.checked = true;
                 }
             });
+        });
+
+
+                $(document).ready(function () {
+          $('.modelSelect').each(function () {
+              const $this = $(this);
+              const isMultiple = $this.attr('multiple') !== undefined;
+
+              $this.select2({
+                  dropdownParent: $this.closest('.modal-content').length
+                      ? $this.closest('.modal-content')
+                      : $(document.body),
+                  closeOnSelect: !isMultiple // مهم جدًا علشان ميقفلش القائمة بعد أول اختيار
+              });
+          });
         });
     </script>
 @endsection

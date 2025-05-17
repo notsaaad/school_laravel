@@ -210,7 +210,9 @@
                     <th> {{ trans('words.الاسم') }} </th>
                     <th> {{ trans('words.الحالة') }} </th>
                     <th> {{ trans('words.معاد التأجيل') }} </th>
-
+                    <th>الدرجة</th>
+                    <th>المستخدم</th>
+                    <th>الاجراءات</th>
                 </tr>
             </thead>
             <tbody>
@@ -218,10 +220,15 @@
                     <tr>
                         <td>{{ $application_subject->subject->name }}</td>
 
-                        @if ($application->status == 'paid')
+                        @if ($application->status == 'paid' && $application_subject->status !="Re-Assessment")
                             @can('has', 'tests_applications_actions')
                                 <td>
-                                    <select class="status-select" data-subject-id="{{ $application_subject->subject->id }}"
+                                  <form id="status-update-form" method="POST" action="{{ route('applications.update_subject') }}">
+                                    @csrf
+                                    <input type="hidden" name="application_id" value="{{ $application->id }}">
+                                    <input type="hidden" name="subject_id" value="{{ $application_subject->subject->id }}">
+                                    <input type="hidden" name="retake_date">
+                                    <select class="status-select" name="status" data-subject-id="{{ $application_subject->subject->id }}"
                                         data-subject-name="{{ $application_subject->subject->name }}"
                                         data-original-status="{{ $application_subject->status }}">
                                         <option value="Not Tested"
@@ -237,6 +244,8 @@
                                             Re-Assessment
                                         </option>
                                     </select>
+                                </form>
+
                                 </td>
                             @else
                                 <td>{{ $application_subject->status }}</td>
@@ -245,9 +254,18 @@
                             <td>{{ $application_subject->status }}</td>
                         @endif
 
+                        <td>{{$application_subject->retake_data}}</td>
+                        <td>{{ $application_subject->result ?? 'لم يتم التحديد' }}</td>
+                        <td>{{$application_subject->user->name}}</td>
 
 
-                        <td>{{ $application_subject->retake_data }}</td>
+
+                        <td >
+                          <div class="d-flex g-2 justify-content-center">
+                            <a href="{{ route('application.subject.edit', [$application->code,$application_subject->id] ) }}" class="btn text-primary"><i class="fa-solid fa-pen-to-square"></i></a>
+
+                          </div>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -271,14 +289,14 @@
 
 
             <div class="actions">
-                <button type="button" onclick="copy('{{ url('applications') . '/' . $application->code . '/link' }}')"
-                    class="es-btn-primary default d-flex gap-2"> نسخ
-                    الرابط
-                </button>
-
+              <button type="button" onclick="copy('{{ url('applications') . '/' . $application->code . '/link' }}')"
+                class="es-btn-primary default d-flex gap-2"> نسخ
+                الرابط
+              </button>
+              <a href="{{ route('application.printdata', $application->code) }}" class="es-btn-primary gap-2">طباعة البيانات</a>
                 <div class="form-check form-switch">
-                    <input value="{{ $application->id }}" @checked($application->can_share == 'yes') onchange="enableToggle(this)"
-                        class="form-check-input" type="checkbox" id="flexSwitchCheckChecked">
+                  <input value="{{ $application->id }}" @checked($application->can_share == 'yes') onchange="enableToggle(this)"
+                  class="form-check-input" type="checkbox" id="flexSwitchCheckChecked">
                 </div>
             </div>
 
@@ -448,7 +466,7 @@
                 return; // Do nothing if the status is the same as before
             }
             let retakeDateInput = '';
-            if (newStatus === 'Retake') {
+            if (newStatus === 'Re-Assessment') {
                 retakeDateInput =
                     `<input type="date" id="retake-date" class="date" placeholder="Enter retake date">`;
             }
@@ -462,7 +480,7 @@
                 confirmButtonText: 'Yes, confirm',
                 cancelButtonText: 'Cancel',
                 preConfirm: () => {
-                    if (newStatus === 'Retake') {
+                    if (newStatus === 'Re-Assessment') {
                         let retakeDate = document.getElementById('retake-date').value;
                         if (!retakeDate) {
                             Swal.showValidationMessage('Please enter the retake date.');
@@ -482,19 +500,22 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Prepare form data
-                    let formData = {
-                        subject_id: subjectId,
-                        status: newStatus,
-                        application_id: '{{ $application->id }}',
-                        retake_date: result.value ? result.value.retakeDate : null,
-                        _token: '{{ csrf_token() }}'
-                    };
-
+                    // // Prepare form data
+                    // let formData = {
+                    //     subject_id: subjectId,
+                    //     status: newStatus,
+                    //     application_id: '{{ $application->id }}',
+                    //     retake_date: result.value ? result.value.retakeDate : null,
+                    //     _token: '{{ csrf_token() }}'
+                    // };
+                      const form = document.getElementById('status-update-form');
+                      form.querySelector('[name="retake_date"]').value = result.value ? result.value.retakeDate : '';
+                      form.submit();
                     // Send POST request
                     $.post('/admin/applications/update_subject', formData, function(response) {
                         Swal.fire('Success', 'The test status has been updated!', 'success');
                         $(this).data('original-status', newStatus);
+                        console.log(response);
                     }).fail(function() {
                         Swal.fire('Error', 'There was an error updating the status.', 'error');
                         $(`[data-subject-id="${subjectId}"]`).val(originalStatus).trigger('change');
@@ -504,7 +525,7 @@
                 }
 
 
-                window.location.reload();
+                // window.location.reload();
 
 
             }).catch(() => {

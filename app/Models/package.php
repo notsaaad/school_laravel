@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\stage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class package extends Model
 {
@@ -25,9 +26,9 @@ class package extends Model
     }
 
 
-    public function stage()
+    public function stages()
     {
-        return $this->belongsTo(stage::class, 'stage_id')->withTrashed();
+        return $this->belongsToMany(Stage::class, 'package_stage', 'package_id', 'stage_id')->withTrashed();
     }
 
     public function products()

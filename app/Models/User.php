@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use App\Models\feesPayment;
 use App\Models\applicationPayment;
+use App\Models\applicationSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -114,5 +115,9 @@ class User extends Authenticatable
     public function student_pay(): HasMany
     {
         return $this->hasMany(student_pay::class, 'student_id');
+    }
+        public function applicationSubjects(): HasMany
+    {
+        return $this->hasMany(applicationSubject::class);
     }
 }

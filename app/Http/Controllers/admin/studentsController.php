@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\admin;
 
-use App\Http\Controllers\Controller;
-use App\Imports\StudentsImport;
-use App\Models\definition;
-use App\Models\stage;
-use App\Models\user;
 use App\Models\fee;
+use App\Models\user;
+use App\Models\stage;
 use App\Models\region;
+use App\Models\definition;
 use Illuminate\Http\Request;
+use App\Models\studentDetail;
+use App\Imports\StudentsImport;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
-use Rap2hpoutre\FastExcel\FastExcel;
+use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
+use Rap2hpoutre\FastExcel\FastExcel;
+use Illuminate\Support\Facades\Redirect;
 
 
 class studentsController extends Controller
@@ -158,7 +159,11 @@ class studentsController extends Controller
 
         return view('admin/students/edit', get_defined_vars());
     }
-
+    function getmo7afza($code) {
+      $defaultRegionId = 1; // مثلاً غير معروف
+      $region = region::where('id', $code)->first();
+      return $region ? $region->id : $defaultRegionId;
+  }
     public function update(Request $request, user $user)
     {
 
@@ -192,8 +197,66 @@ class studentsController extends Controller
         $data['permissions'] = '[]';
 
         // try {
+          if (!empty($request->national_id)) {
+            // return "FROM TRUE IF";
+            $nat_id = $request->national_id;
+            $count = strlen($nat_id);
 
-        DB::beginTransaction();
+            if ($count === 14 && $nat_id) {
+                // تحديد الكود الأول لتحديد القرن
+                $code_el_mo7afza = $nat_id[0];
+
+                // بناء السنة
+                if ($code_el_mo7afza == 2) {
+                    $year = "19" . $nat_id[1] . $nat_id[2];
+                } else {
+                    $year = "20" . $nat_id[1] . $nat_id[2];
+                }
+
+                // الشهر واليوم
+                $month = $nat_id[3] . $nat_id[4];
+                $day = $nat_id[5] . $nat_id[6];
+
+                // تاريخ الميلاد بصيغة Y-m-d
+                $birthdate = sprintf('%04d-%02d-%02d', $year, $month, $day);
+
+                // كود المحافظة = رقمين
+                $region_code = $nat_id[7] . $nat_id[8];
+
+                // جلب ID المحافظة من جدول المحافظات
+                // return $region_code;
+                $region_id = (int) $this->getmo7afza($region_code);
+                $serial = $nat_id[12]; // الرقم قبل الأخير
+                $gender = ((int)$serial % 2 === 0) ? 'girl' : 'boy';
+                // return "$region_code -- $region_id";S
+                // DB::beginTransaction();
+
+                User::where('id', $user->id)->update(['gender' => $gender]);
+
+                studentDetail::where('student_id', $user->id)->update([
+                    'birth_date' => $birthdate,
+                    'region_id'  => $region_id,
+                ]);
+
+                DB::commit();
+
+                // return "$birthdate --- $region_id -- $user->id";
+            }
+        }else{
+          // return "FROM ELSE $user->id";
+          // DB::beginTransaction();
+          $userModel = User::find($user->id);
+          $userModel->gender = null;
+          $userModel->save();
+
+          $student = studentDetail::where('student_id', $user->id)->first();
+          $student->birth_date = null;
+          $student->region_id = null;
+          $student->national_id = null;
+          $student->save();
+        }
+        // DB::beginTransaction();
+        // DB::commit();
 
         $user->update($data);
 

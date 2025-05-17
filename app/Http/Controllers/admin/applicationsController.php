@@ -213,6 +213,12 @@ class applicationsController extends Controller
         return redirect()->route('application.single', $request->code )->with(['success'=>'تم التسوية بنجاح']);
     }
 
+    function print($code){
+        $fields = DynamicField::get();
+        $application = application::where("code", $code)->firstOrFail();
+        return view('admin.applications.print', get_defined_vars());
+    }
+
     public function update(Request $request)
     {
 
@@ -293,10 +299,21 @@ class applicationsController extends Controller
 
     public function update_subject(Request $request)
     {
+
+        $original   = applicationSubject::where("application_id", $request->application_id)->where("subject_id", $request->subject_id)->firstOrFail();
         applicationSubject::where("application_id", $request->application_id)->where("subject_id", $request->subject_id)->update([
             "status" => $request->status,
             "retake_data" => $request->retake_date ?? null
         ]);
+        if($request->status == "Re-Assessment"){
+          $new = $original->replicate();
+          $new->user_id     = auth()->id();
+          $new->status      = 'Not Tested';
+          $new->retake_data = $request->retake_date ?? null;
+          $new->created_at  = now();
+          $new->updated_at  = now();
+          $new->save();
+        }
 
         return Redirect::back()->with("success", "تم التعديل");
     }
@@ -471,5 +488,29 @@ class applicationsController extends Controller
         } catch (\Throwable $th) {
             return json(["status" => "error", "show" => $application->show]);
         }
+    }
+
+
+    function EditSubject($code, $id){
+      $application = Application::where('code', $code)->firstOrFail();
+      $subject    = applicationSubject::where('id', $id)
+      ->where('application_id', $application->id)
+      ->firstOrFail();
+      // return get_defined_vars();
+      return view('admin.applications.editSubject', get_defined_vars());
+    }
+
+    function PostEditSubject(Request $request, $code, $id){
+      $request->validate([
+        'retake_data' => 'nullable|date',
+        'result'      => 'numeric|nullable'
+      ]);
+
+      $subject = applicationSubject::where('id', $id)->firstOrFail();
+      $subject->retake_data = $request->retake_data;
+      $subject->result      = $request->result;
+      $subject->save();
+
+      return redirect()->route('application.single', $code)->with('success', 'تم تعديل الاختبار بنجاح');
     }
 }

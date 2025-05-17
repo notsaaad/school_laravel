@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\YearCost;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class System extends Model
 {
     use HasFactory;
-    protected $guarded = [];
-    protected $table = "system";
+    protected $table = 'system';
+
+    protected $fillable = ['name'];
+
+    public function yearCosts()
+    {
+        return $this->hasMany(YearCost::class);
+    }
 }

@@ -24,12 +24,12 @@
                 @forelse ($all as $stage)
                     <tr>
 
-                        <td style="text-align: {{ getLocale() == 'ar' ? 'right' : 'left' }}">
-                            <x-icons.move></x-icons.move> {{ $stage->name }}
-                        </td>
+                      <td style="text-align: {{ getLocale() == 'ar' ? 'right' : 'left' }}">
+                        <x-icons.move></x-icons.move>  {{ $stage->name }} - #{{$stage->id}}<x-copy text="{{ $stage->id }}" />
+                      </td>
+
 
                         <input type="hidden" value="{{ $stage->id }}" class="ids">
-
 
                         <x-td_end id="{{ $stage->id }}" name="{{ $stage->name }}">
 

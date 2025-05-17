@@ -111,7 +111,7 @@ Route::get('get_bus_settings/{place_id}', function ($place_id) {
 
 Route::get('applications/{code}/link', function ($code) {
 
-    $application = application::where("code", $code)->where("can_share", "yes")->firstOrFail();
+    $application = application::where("code", $code)->firstOrFail();
     $fields = DynamicField::get();
 
     return view("applicationsLink", get_defined_vars());
@@ -143,14 +143,18 @@ Route::put('applications/{code}', function (Request $request, $code) {
 
         if ($applicationData) {
             $applicationData->update(['value' => $value]);
+
         } else {
             applicationData::create([
                 'application_id' => $application->id,
                 'field_id' => $field_id,
                 'value' => $value,
+
             ]);
         }
     }
+    $application->can_share = 'no';
+    $application->save();
 
     DB::commit();
 

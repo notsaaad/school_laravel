@@ -2,12 +2,18 @@
 
 return [
     'permissions' => [
-        "المستخدمين" => ["عرض المستخدمين" => "users_show", "الاجراءات" => "users_action",  "تسجيل الدخول علي اكونت المستخدم" => "user_login"],
+        "المستخدمين" => [
+          "عرض المستخدمين"                      => "users_show",
+          "الاجراءات"                            => "users_action",
+          "تسجيل الدخول علي اكونت المستخدم"   => "user_login"
+        ],
 
         "المراحل" => "stages",
 
 
-        "الطلاب" => ["عرض الطلاب" => "students_show", "الاجراءات" => "students_action",  "تسجيل الدخول علي اكونت الطالب" => "students_login"],
+        "الطلاب" => [
+          "عرض الطلاب" => "students_show",
+          "الاجراءات" => "students_action",  "تسجيل الدخول علي اكونت الطالب" => "students_login"],
 
         "المنتجات" => ["عرض المنتجات" => "products_show", "الاجراءات" => "products_action"],
 

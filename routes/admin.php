@@ -197,10 +197,6 @@ Route::prefix("orders")->group(function () {
 
     Route::middleware("checkRole:return_requested")->post('{order}/return_requested',  [orderLogicController::class, 'return_requested']);
 
-
-
-
-
     Route::middleware("checkRole:picking_order")->post('{order}/picked',  [orderLogicController::class, 'picked']);
 
     Route::middleware("checkRole:return_product")->post('{order}/return',  [orderLogicController::class, 'return']);
@@ -303,18 +299,18 @@ Route::prefix("fees")->middleware('checkRole:fees_show')->group(function () {
 
     Route::get('{user}/{fee}/calculate-payment', [PaymentController::class, 'calculatePayment']);
 
-    Route::get('/', [feesController::class, 'index']);
-    Route::get('search', [feesController::class, 'search']);
-    Route::post('/', [feesController::class, 'store']);
-    Route::get('changeOrder', [feesController::class, 'changeOrder']);
-    Route::delete('destroy', [feesController::class, 'destroy']);
-    Route::post('showHide', [feesController::class, 'showHide']);
-    Route::get('{fee}/edit', [feesController::class, 'edit']);
-    Route::put('{fee}', [feesController::class, 'update']);
-    Route::delete('items/destroy', [feesController::class, 'destroy_item']);
+    Route::get('/',                 [feesController::class, 'index']);
+    Route::get('search',            [feesController::class, 'search']);
+    Route::post('/',                [feesController::class, 'store']);
+    Route::get('changeOrder',       [feesController::class, 'changeOrder']);
+    Route::delete('destroy',        [feesController::class, 'destroy']);
+    Route::post('showHide',         [feesController::class, 'showHide']);
+    Route::get('{fee}/edit',        [feesController::class, 'edit']);
+    Route::put('{fee}',             [feesController::class, 'update']);
+    Route::delete('items/destroy',  [feesController::class, 'destroy_item']);
     Route::get('items/changeOrder', [feesController::class, 'changeOrder_items']);
-    Route::put('items/update', [feesController::class, 'update_item']);
-    Route::post('{fee}/items', [feesController::class, 'store_items']);
+    Route::put('items/update',      [feesController::class, 'update_item']);
+    Route::post('{fee}/items',      [feesController::class, 'store_items']);
 });
 
 
@@ -343,56 +339,56 @@ Route::post('items/makeOrder', [UsersUserController::class, 'items_makeOrder']);
 
 Route::middleware('checkRole:years')->prefix("years")->group(function () {
 
-    Route::post('/', [YearController::class, 'store']);
-    Route::put('/', [YearController::class, 'update']);
-    Route::DELETE('destroy', [YearController::class, 'destroy']);
-    Route::get('changeOrder', [YearController::class, 'changeOrder']);
+    Route::post('/',            [YearController::class, 'store']);
+    Route::put('/',             [YearController::class, 'update']);
+    Route::DELETE('destroy',    [YearController::class, 'destroy']);
+    Route::get('changeOrder',   [YearController::class, 'changeOrder']);
 });
 
 
 Route::middleware('checkRole:regions')->prefix("regions")->group(function () {
-    Route::post('/', [regionsController::class, 'store']);
-    Route::put('/', [regionsController::class, 'update']);
-    Route::DELETE('destroy', [regionsController::class, 'destroy']);
-    Route::get('changeOrder', [regionsController::class, 'changeOrder']);
+    Route::post('/',            [regionsController::class, 'store']);
+    Route::put('/',             [regionsController::class, 'update']);
+    Route::DELETE('destroy',    [regionsController::class, 'destroy']);
+    Route::get('changeOrder',   [regionsController::class, 'changeOrder']);
 
 
-    Route::get('{region}/places', [regionsController::class, 'places_index']);
-    Route::post('places', [regionsController::class, 'places']);
-    Route::put('places', [regionsController::class, 'places_update']);
+    Route::get('{region}/places',   [regionsController::class, 'places_index']);
+    Route::post('places',           [regionsController::class, 'places']);
+    Route::put('places',            [regionsController::class, 'places_update']);
     Route::delete('places/destroy', [regionsController::class, 'places_destroy']);
 });
 
 
 Route::prefix("buses")->group(function () {
-    Route::get('/', [busController::class, 'index']);
-    Route::post('/', [busController::class, 'store']);
-    Route::put('/', [busController::class, 'update']);
-    Route::DELETE('destroy', [busController::class, 'destroy']);
-    Route::get('changeOrder', [busController::class, 'changeOrder']);
-    Route::get('{bus}/settings', [busController::class, 'settings']);
+    Route::get('/',               [busController::class, 'index']);
+    Route::post('/',              [busController::class, 'store']);
+    Route::put('/',               [busController::class, 'update']);
+    Route::DELETE('destroy',      [busController::class, 'destroy']);
+    Route::get('changeOrder',     [busController::class, 'changeOrder']);
+    Route::get('{bus}/settings',  [busController::class, 'settings']);
 
 
 
-    Route::post('{bus}/settings', [regionsController::class, 'settings_store']);
-    Route::put('settings', [regionsController::class, 'settings_update']);
+    Route::post('{bus}/settings',     [regionsController::class, 'settings_store']);
+    Route::put('settings',            [regionsController::class, 'settings_update']);
     Route::delete('settings/destroy', [regionsController::class, 'settings_destroy']);
 
     Route::prefix('orders')->group(function(){
-        Route::get('/', [busController::class, 'orders'])->name('bus.orders');
-        Route::get('{order}/Edit', [busController::class, 'OrderEdit'])->name('bus.order.edit');
-        Route::post('orderChangeStatue', [busController::class, 'ChangeStatue'])->name('bus.order.ChangeStatue');
-        Route::get('{order}/Delete', [busController::class, 'DeleteBusOrder'])->name('bus.order.Delete');
+        Route::get('/',                   [busController::class, 'orders'])->name('bus.orders');
+        Route::get('{order}/Edit',        [busController::class, 'OrderEdit'])->name('bus.order.edit');
+        Route::post('orderChangeStatue',  [busController::class, 'ChangeStatue'])->name('bus.order.ChangeStatue');
+        Route::get('{order}/Delete',      [busController::class, 'DeleteBusOrder'])->name('bus.order.Delete');
     });
 });
 
 
 Route::middleware('checkRole:definitions')->prefix("definitions")->group(function () {
-    Route::post('/', [definitionsController::class, 'store']);
-    Route::put('/', [definitionsController::class, 'update']);
-    Route::DELETE('destroy', [definitionsController::class, 'destroy']);
+    Route::post('/',          [definitionsController::class, 'store']);
+    Route::put('/',           [definitionsController::class, 'update']);
+    Route::DELETE('destroy',  [definitionsController::class, 'destroy']);
     Route::get('changeOrder', [definitionsController::class, 'changeOrder']);
-    Route::get('{type}', [definitionsController::class, 'index']);
+    Route::get('{type}',      [definitionsController::class, 'index']);
 });
 
 
@@ -409,22 +405,21 @@ Route::prefix("applications")->group(function () {
         });
         Route::middleware('checkRole:fees_actions')->group(function () {
 
-            Route::post('/', [applicationsController::class, 'fees']);
-            Route::put('/', [applicationsController::class, 'fees_update']);
-            Route::DELETE('destroy', [applicationsController::class, 'destroy_fees']);
+            Route::post('/',          [applicationsController::class, 'fees']);
+            Route::put('/',           [applicationsController::class, 'fees_update']);
+            Route::DELETE('destroy',  [applicationsController::class, 'destroy_fees']);
         });
     });
 
 
     Route::middleware('checkRole:tests')->prefix("tests")->group(function () {
-        Route::get('/', [testsController::class, 'index']);
-        Route::post('/', [testsController::class, 'store']);
-        Route::put('/', [testsController::class, 'update']);
-        Route::DELETE('destroy', [testsController::class, 'destroy']);
-
-        Route::get('{test}/subjects', [testsController::class, 'subject_index']);
-        Route::post('subject', [testsController::class, 'subject']);
-        Route::put('subject', [testsController::class, 'subject_update']);
+        Route::get('/',           [testsController::class, 'index']);
+        Route::post('/',          [testsController::class, 'store']);
+        Route::put('/',           [testsController::class, 'update']);
+        Route::DELETE('destroy',  [testsController::class, 'destroy']);
+        Route::get('{test}/subjects',    [testsController::class, 'subject_index']);
+        Route::post('subject',           [testsController::class, 'subject']);
+        Route::put('subject',            [testsController::class, 'subject_update']);
         Route::delete('subject/destroy', [testsController::class, 'subject_destroy']);
     });
 
@@ -433,6 +428,9 @@ Route::prefix("applications")->group(function () {
 
     Route::post('enableToggle', [applicationsController::class, 'enableToggle']);
     Route::get('{code}', [applicationsController::class, 'show'])->name('application.single');
+    Route::get('{code}/print', [applicationsController::class, 'print'])->name('application.printdata');
+    Route::get('{code}/subject/{id}', [applicationsController::class, 'EditSubject'])->name('application.subject.edit');
+    Route::post('{code}/subject/{id}', [applicationsController::class, 'PostEditSubject'])->name('application.subject.postedit');
     Route::get('{code}/payment', [applicationsController::class, 'HandelPayment'])->name('application.handelPayment');
     Route::post('ChangeStatue', [applicationsController::class, 'ChangeStatue'])->name('application.ChangeStatue');
     Route::get('{code}/App-change-statue', [applicationsController::class, 'chnageStatueAfter'])->name('application.chnageStatueAfter');
@@ -443,7 +441,7 @@ Route::prefix("applications")->group(function () {
 
     Route::post('{application}/updateFields', [applicationsController::class, 'updateFields']);
     Route::post('/', [applicationsController::class, 'store']);
-    Route::post('update_subject', [applicationsController::class, 'update_subject']);
+    Route::post('update_subject', [applicationsController::class, 'update_subject'])->name('applications.update_subject');
     Route::put('/', [applicationsController::class, 'update']);
     Route::DELETE('destroy', [applicationsController::class, 'destroy']);
     Route::post('changeStatus', [applicationsController::class, 'changeStatus']);

@@ -1,4 +1,4 @@
-@props(['label', 'reqiured', 'name', 'col'])
+@props(['label', 'reqiured', 'name', 'col', 'multiple' => false])
 
 
 <div class="group {{ $col ?? 'col-lg-6 col-12' }} ">
@@ -10,6 +10,7 @@
 
     <select id="{{ $name }}"
         {{ $attributes->class(['modelSelect', 'invalid' => $errors->has("$name"), 'w-100', 'checkThis' => isset($reqiured)]) }}
+        {{ $multiple ? 'multiple' : '' }}
         name="{{ $name }}">
         {{ $slot }}
     </select>

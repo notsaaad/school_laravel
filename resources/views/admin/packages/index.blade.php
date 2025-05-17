@@ -70,7 +70,8 @@
 
                         </td>
 
-                        <td>{{ $package->stage->name }}</td>
+                        {{-- <td>{{ $package->stage->name }}</td> --}}
+                        <td>Test</td>
 
 
                         @if ($package->gender == 'boy')
@@ -165,10 +166,16 @@
 
         <div class="col-lg-6 col-12 group ">
             <label for="stage_id" class="mb-2"> {{ trans('words.المرحلة') }}</label>
-            <select name="stage_id" class="modelSelect w-100 ">
-                <option value="">{{ trans('words.الكل') }}</option>
+            <select name="stage_id[]" multiple class="modelSelect w-100">
                 @foreach ($stages as $stage)
-                    <option value="{{ $stage->id }}" @selected(isset($_GET['stage_id']) && $_GET['stage_id'] == $stage->id)> {{ $stage->name }} </option>
+                    <option
+                        value="{{ $stage->id }}"
+                        @if(is_array(request('stage_id')) && in_array($stage->id, request('stage_id')))
+                            selected
+                        @endif
+                    >
+                        {{ $stage->name }}
+                    </option>
                 @endforeach
             </select>
         </div>
@@ -204,16 +211,33 @@
                 </x-form.input>
 
 
-                <x-form.select onchange="get_packages()" col="col-4" reqiured name="stage_id"
+                {{-- <x-form.select onchange="get_packages()" col="col-4" reqiured name="stage_id"
                     label="{{ trans('words.المرحلة') }}">
 
-                    {{-- <option value="" disabled selected>{{ trans('words.select') }}</option> --}}
+                    <option value="" disabled selected>{{ trans('words.select') }}</option>
 
                     @foreach ($stages as $stage)
                         <option value="{{ $stage->id }}">{{ $stage->name }}</option>
                     @endforeach
 
-                </x-form.select>
+                </x-form.select> --}}
+
+        <div class="col-lg-6 col-12 group ">
+            <label for="stage_id"  class="mb-2"> {{ trans('words.المرحلة') }}</label>
+            <select name="stage_id[]" multiple class="modelSelect w-100">
+                @foreach ($stages as $stage)
+                    <option
+                        value="{{ $stage->id }}"
+                        @if(is_array(request('stage_id')) && in_array($stage->id, request('stage_id')))
+                            selected
+                        @endif
+                    >
+                        {{ $stage->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
 
 
                 <x-form.select col="col-4" reqiured name="gender" label="{{ trans('words.النوع') }}">
@@ -314,7 +338,7 @@
 
         }
 
-    
+
     </script>
 
     <script>
@@ -329,6 +353,20 @@
             });
 
 
+        });
+
+        $(document).ready(function () {
+          $('.modelSelect').each(function () {
+              const $this = $(this);
+              const isMultiple = $this.attr('multiple') !== undefined;
+
+              $this.select2({
+                  dropdownParent: $this.closest('.modal-content').length
+                      ? $this.closest('.modal-content')
+                      : $(document.body),
+                  closeOnSelect: !isMultiple // مهم جدًا علشان ميقفلش القائمة بعد أول اختيار
+              });
+          });
         });
     </script>
 @endsection

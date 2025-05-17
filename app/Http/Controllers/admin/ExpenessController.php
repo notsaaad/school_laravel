@@ -39,7 +39,7 @@ class ExpenessController extends Controller
                     "installment"           => 0,
                     "cash"                  => 0
                 );
-                DB::table('yearcost_stage')->insert($arr);
+                DB::table('yearcost_stages')->insert($arr);
             }
         }
 
@@ -119,7 +119,7 @@ class ExpenessController extends Controller
             $system_name_row = DB::table('system')->where('id', $yearcost->system_id)->get();
             $system_name = $system_name_row[0]->name;
             $arr['system_name'] = $system_name;
-            $stages                = DB::table('yearcost_stage')->where('yearcost_id', $yearcost_id)->get(['id','yearcost_id','book','stage_id', 'cash', 'installment']);
+            $stages                = DB::table('yearcost_stages')->where('yearcost_id', $yearcost_id)->get(['id','yearcost_id','book','stage_id', 'cash', 'installment']);
             for($i=0; $i<count($stages); $i++){
                 $stage_id = $stages[$i]->stage_id;
                 $stage    = DB::table('stages')->where('id', $stage_id)->get(['name']);

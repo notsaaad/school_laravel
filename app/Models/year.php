@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\yearcost;
+
+use App\Models\YearCost;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +27,6 @@ class year extends Model
 
     public function yearcost()
     {
-        return $this->hasMany(yearcost::class, 'year_id');
+        return $this->hasMany(YearCost::class, 'year_id');
     }
 }

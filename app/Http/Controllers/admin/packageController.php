@@ -31,14 +31,18 @@ class packageController extends Controller
 
     public function store(Request $request)
     {
+        // return $request;
         $data = $request->validate([
             "name" => "required",
-            "stage_id" => "required",
+            "stage_id" => "required|array|min:1",
+            "stage_id.*" => "exists:stages,id",
             "img" => "nullable|mimes:jpeg,png,jpg,gif,webp",
             "gender" => "required",
             "price" => "required",
         ], [
-            "stage_id.required" => "يرجي اختيار مرحلة",
+            "stage_id.required" => "يرجى اختيار مرحلة واحدة على الأقل.",
+            "stage_id.array" => "المرحلة يجب أن تكون قائمة من العناصر.",
+            "stage_id.*.exists" => "المرحلة المختارة غير موجودة.",
         ]);
 
 
@@ -46,9 +50,9 @@ class packageController extends Controller
         if (isset($data["img"])) {
             $data["img"] = Storage::put("public/packages", $data["img"]);
         }
-
-        package::create($data);
-
+        $packageData = collect($data)->except('stage_id')->toArray();
+        $package     = package::create($data);
+        $package->stages()->sync($data['stage_id']);
         return redirect()->back()->with("success", "تم الاضافة بنجاح");
     }
 
@@ -158,22 +162,25 @@ class packageController extends Controller
     public function update(Request $request, package $package)
     {
         $data = $request->validate([
-            "name" => "required",
-            "stage_id" => "required",
+            "name" => "required|string|max:255",
+            "stage_id" => "required|array|min:1",
+            "stage_id.*" => "exists:stages,id",
             "img" => "nullable|mimes:jpeg,png,jpg,gif,webp",
             "gender" => "required",
-            "price" => "required",
+            "price" => "required|numeric|min:0",
         ], [
-            "stage_id.required" => "يرجي اختيار مرحلة",
+            "stage_id.required" => "يرجى اختيار مرحلة واحدة على الأقل.",
         ]);
 
         if (isset($data["img"])) {
-            $data["img"] = Storage::put("public/packages", $data["img"]);
+            $data["img"] = $request->file("img")->store("packages", "public");
         }
 
-        $package->update($data);
+        $packageData = collect($data)->except('stage_id')->toArray();
 
+        $package->update($packageData);
 
+        $package->stages()->sync($data['stage_id']);
 
         return redirect()->back()->with("success", "تم التعديل بنجاح");
     }

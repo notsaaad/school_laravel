@@ -39,48 +39,48 @@ class userController extends Controller
         $have_nat_id = "Not found For ID = $user_id";
         $studentDetail = studentDetail::where('student_id', $user_id)->get();
         // return $studentDetail;
-        if( $studentDetail[0]->national_id !=null){
-            $nat_id = $studentDetail[0]->national_id;
-            $count = strlen($nat_id);
+        if(isset($studentDetail[0]->national_id)){
+            if( $studentDetail[0]->national_id !=null){
+              $nat_id = $studentDetail[0]->national_id;
+              $count = strlen($nat_id);
 
-            if($count == 14 && $studentDetail[0]->region_id ==null){
-                $have_nat_id = "Found For ID = $user_id";
-                $code_el_mo7afza = $nat_id[0];
-                if($code_el_mo7afza == 2){
-                    $year[0] = "1";
-                    $year[1] = "9";
-                }else{
-                    $year[0] = "2";
-                    $year[1] = "0";
-                }
-                $year[2]             = $nat_id[1];
-                $year[3]             = $nat_id[2];
-                $month[0]            = $nat_id[3];
-                $month[1]            = $nat_id[4];
-                $day[0]              = $nat_id[5];
-                $day[1]              = $nat_id[6];
-                $brithday            = "$year-$month-$day";
-                $country_id          = "$nat_id[7]$nat_id[8]";
-                $country  = (int) $this->getmo7afza($country_id);
-                studentDetail::where(["student_id"=> "$user_id"])->update(
-                    ["birth_date"=> "$brithday","region_id" => "$country"],
-                    );
-
-
-
-            }
+              if($count == 14 && $studentDetail[0]->region_id ==null){
+                  $have_nat_id = "Found For ID = $user_id";
+                  $code_el_mo7afza = $nat_id[0];
+                  if($code_el_mo7afza == 2){
+                      $year[0] = "1";
+                      $year[1] = "9";
+                  }else{
+                      $year[0] = "2";
+                      $year[1] = "0";
+                  }
+                  $year[2]             = $nat_id[1];
+                  $year[3]             = $nat_id[2];
+                  $month[0]            = $nat_id[3];
+                  $month[1]            = $nat_id[4];
+                  $day[0]              = $nat_id[5];
+                  $day[1]              = $nat_id[6];
+                  $brithday            = "$year-$month-$day";
+                  $country_id          = "$nat_id[7]$nat_id[8]";
+                  $country  = (int) $this->getmo7afza($country_id);
+                  studentDetail::where(["student_id"=> "$user_id"])->update(
+                      ["birth_date"=> "$brithday","region_id" => "$country"],
+                      );
+              }
+          }
         }
 
+
     }
 
-    function getmo7afza($number){
+    // function getmo7afza($number){
 
-        $country = 1;
-        $country_return  = region::where('id', $number)->get()->first();
-        if(isset($country_return['id']))
-        $country = $country_return['id'];
-        return $country;
-    }
+    //     $country = 1;
+    //     $country_return  = region::where('id', $number)->get()->first();
+    //     if(isset($country_return['id']))
+    //     $country = $country_return['id'];
+    //     return $country;
+    // }
     use packageTriat;
     function login(Request $request)
     {

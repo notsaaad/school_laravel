@@ -32,4 +32,10 @@ class stage extends Model
     {
         return $this->hasMany(Comment::class, 'stage_id');
     }
+
+
+    public function packages()
+    {
+        return $this->belongsToMany(Package::class, 'package_stage');
+    }
 }
