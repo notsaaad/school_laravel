@@ -35,7 +35,7 @@
 
 @section('content')
     <div class="actions border-0">
-        <x-admin.layout.back back="admin/students"
+        <x-admin.layout.back back="admin/students?type={{ $user->details->study_type}}"
             title=" {{ trans('words.المصاريف') }} {{ $user->name }}  ( {{ $user->code }} )"></x-admin.layout.back>
     </div>
 

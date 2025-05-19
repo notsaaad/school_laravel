@@ -34,15 +34,18 @@
         </x-form.input>
 
 
-
-        <x-form.select col="col-lg-3 col-6" reqiured name="stage_id" label="{{ trans('words.المرحلة') }}">
-
-            @foreach ($stages as $stage)
-                <option @selected($stage->id == $product->stage_id) value="{{ $stage->id }}">{{ $stage->name }}</option>
-            @endforeach
-
-
-        </x-form.select>
+        <div class="form-group col-lg-4">
+            <label for="stage_id">المرحلة</label>
+            <select name="stage_id[]" id="stage_id" class="form-control modelSelect" multiple required>
+                @foreach($stages as $stage)
+                    <option value="{{ $stage->id }}"
+                        @if(in_array($stage->id, $product->stages->pluck('id')->toArray())) selected @endif
+                    >
+                        {{ $stage->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
 
 

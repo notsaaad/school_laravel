@@ -234,6 +234,20 @@
             font-size: 25px;
 
         }
+        .outOfStock td:first-child{
+          position: relative;
+        }
+        .outOfStock td:first-child::before{
+          content: 'لا يوجد قطع';
+          background-color: red;
+          color: white;
+          position: absolute;
+          top: 0px;
+          padding: 5px;
+          border-radius: 13px;
+          font-size: 13px;
+          right: -5px;
+        }
     </style>
 @endsection
 
@@ -302,7 +316,7 @@
             </div>
 
             <div class="actions">
-                @if($order->status != 'picked')
+                {{-- @if($order->status != 'picked')
                     <form action="{{route('order.DeliverdAll')}}" method="post">
                         @csrf
                         <input type="hidden" name="code" value="{{$order->reference}}">
@@ -310,10 +324,13 @@
                         <button class="btn btn-primary">تسليم الكل</button>
                     </form>
 
-                @endif
+                @endif --}}
 
-                <x-form.link class="es-btn-primary" title="{{trans('words.اضافة منتج')}}"
+                  @if($order->type == "items")
+                    <x-form.link class="es-btn-primary" title="{{trans('words.اضافة منتج')}}"
                     path="admin/items/{{ $order->user_id }}?addTo={{ $order->reference }}"></x-form.link>
+                  @endif
+
 
 
                 {{-- تسوية --}}
@@ -331,7 +348,7 @@
                 @endif
 
                 {{-- تسليم --}}
-                @if ($order->details()->where('picked', '0')->exists() == 'paid')
+                @if ($order->details()->where('picked', '0')->exists() == 'paid'  && ( $order->status == "paid" ||  $order->status == "to be confirmed" || $order->status == "partially_picked"))
                     @can('has', 'picking_order')
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderModal">
                             {{ trans('words.تسليم الأوردر') }}
@@ -418,9 +435,9 @@
                                     @if($order->status != 'picked')
                                     <th>#</th>
                                     @endif
-                                    <th> {{ trans('words.صورة المنتج') }}</th>
+                                    <th>{{ trans('words.صورة المنتج') }}</th>
                                     <th>{{ trans('words.اسم المنتج') }}</th>
-                                    <th> {{ trans('words.الكمية') }}</th>
+                                    <th>{{ trans('words.الكمية') }}</th>
                                     <th>{{ trans('الكمية في المخزن') }}</th>
 
                                     @can('has', 'picking_order')
@@ -431,9 +448,10 @@
 
 
                                     @can('has', 'update_size')
-                                        @if ($order->status == 'pending')
+                                        @if ($order->status != 'picked')
                                             <th> {{ trans('words.تعديل المقاس') }} </th>
                                         @endif
+
                                     @endcan
                                 </tr>
 
@@ -443,10 +461,15 @@
 
 
                                 @foreach ($order->details as $detail)
-                                    <tr>
+                                  @php
+                                    $itemStock = isProductVariantOutOfStock($detail->product_id, $detail->variant_id);
+                                  @endphp
+                                    <tr class=" @if($detail->picked == 0  && $itemStock) outOfStock  @endif {{ $detail->variant->sku }}">
 
                                         @if($order->status != 'picked' &&  $detail->picked == 0 )
                                         <td><input type="checkbox" class="check_order_id" id="{{$detail->id}}" onChange="CheckBTN(this.id)" order="{{$detail->id}}"></td>
+                                        @else
+                                          <td><input type="checkbox" disabled></td>
                                         @endif
 
 
@@ -462,7 +485,7 @@
                                         @endphp
 
                                         <td><img width="80" height="60" style="object-fit: contain"
-                                                src="{{ $img }}">
+                                                src="{{ $img }}" onclick="copy('{{ $detail->variant->sku }}')" title="اضفط للنسخ {{ $detail->variant->sku }}">
                                         </td>
 
 
@@ -489,7 +512,7 @@
 
 
                                         @can('has', 'update_size')
-                                            @if ($order->status == 'pending' && count($detail->product->variants) > 1)
+                                            @if ( count($detail->product->variants) > 1 && $detail->picked == 0)
                                                 <td>
 
 
@@ -546,10 +569,10 @@
                                                     </div>
                                                 </td>
                                             @else
-                                                <td></td>
+                                                <td>تم تسليم المنتج</td>
                                             @endif
                                         @endcan
-                                        @if($detail->picked == 1)
+                                        @if($detail->picked == 1 && $order->type == "items" )
                                                 <td>
                                                     <form action="{{route('order.returnItem')}}" method="POST">
                                                         @csrf
@@ -599,22 +622,25 @@
             @can('has', 'order_payment')
                 <div class="col-lg-4 col-12 mt-2">
                     <div class="sammery">
+                        {{-- <p>Order Fees {{$order->getFees()}}</p>
+                        <p>Order BasePrice {{$order->getBasePrice()}}</p>
+                        <p>Order TotalPrice {{$order->getTotalPrice()}}</p> --}}
                         <div class="sammery_title">{{ trans('words.الفاتورة') }}</div>
 
                         <div class="d">
                             <div class="title"> {{ trans('words.الباكيدج') }} </div>
-                            <div class="number" id="order_price"> {{ $order->price() }} {{ trans('words.ج') }} </div>
+                            <div class="number" id="order_price"> {{ $order->getBasePrice() }} {{ trans('words.ج') }} </div>
                         </div>
 
 
                         <div class="d" style="border-bottom: 1px solid var(--mainBg)">
                             <div class="title"> {{ trans('words.مصاريف الخدمة') }} </div>
-                            <div class="number" id="order_price"> {{ $order->fees() }} {{ trans('words.ج') }} </div>
+                            <div class="number" id="order_price"> {{ $order->getFees() }} {{ trans('words.ج') }} </div>
                         </div>
 
                         <div class="d mt-2">
                             <div class="title"> {{ trans('words.الاجمالي') }} </div>
-                            <div class="number" id="order_price"> {{ $order->sell_price() }} {{ trans('words.ج') }}</div>
+                            <div class="number" id="order_price"> {{ $order->getTotalPrice() }} {{ trans('words.ج') }}</div>
                         </div>
 
                         <div class="d mb-0 pb-0">
@@ -646,7 +672,7 @@
 
                             <div class="d-flex gap-1 align-items-center">
                                 <div class="number" id="commation_price">
-                                    {{ $order->sell_price() - $order->amount_received() }}</div>
+                                    {{ $order->getTotalPrice() - $order->amount_received() }}</div>
                                 <span>{{ trans('words.ج') }}</span>
                             </div>
 
@@ -791,7 +817,7 @@
                 html: `
                     <div>
                         <label for="amount">المبلغ المراد استلامه:</label>
-                        <x-form.input col="col-12" type="number" id="amount" name="" value="{{ $order->sell_price() - $order->amount_received() }}" readonly></x-form.input>
+                        <x-form.input col="col-12" type="number" id="amount" name="" value="{{ $order->getTotalPrice() - $order->amount_received() }}" readonly></x-form.input>
                     </div>
                     <div>
                         <label for="receivedAmount">المبلغ المستلم:</label>
@@ -799,7 +825,7 @@
                     </div>
                     <div>
                         <label for="remainingAmount">المبلغ المتبقي:</label>
-                        <x-form.input col="col-12" type="number" id="remainingAmount" readonly name="" value="{{ $order->sell_price() - $order->amount_received() }}"></x-form.input>
+                        <x-form.input col="col-12" type="number" id="remainingAmount" readonly name="" value="{{ $order->getTotalPrice() - $order->amount_received() }}"></x-form.input>
                     </div>
                     <div>
                         <label for="paymentMethod">طريقة استلام النقود:</label>
@@ -877,6 +903,7 @@
                         },
                         success: function(response) {
                             if (response.status == "error") {
+                              console.log(response);
                                 error_with_sound(response.message)
                             } else if (response.status == "success") {
                                 success_with_sound(response.message)

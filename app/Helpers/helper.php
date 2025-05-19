@@ -1,16 +1,21 @@
 <?php
 
-use App\Http\Resources\orderResource;
-use App\Models\applicationFee;
 use App\Models\cart;
-use App\Models\order;
-use App\Models\setting;
 use App\Models\test;
 use App\Models\User;
-use App\Models\WarehouseProduct;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use App\Models\order;
+use App\Models\product;
+use App\Models\setting;
+use App\Models\warehouse;
+use App\Models\orderDatail;
 use Illuminate\Support\Str;
+use App\Models\applicationFee;
+use App\Models\WarehouseProduct;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Resources\orderResource;
+use App\Models\WarehouseProductVariant;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Redirect;
 
 
@@ -272,4 +277,137 @@ function testCheck($stageId, $studyType, $yearId)
 function canEdit($application)
 {
     return in_array($application->status, ['new', 'paid']);
+}
+
+
+if (!function_exists('updateWarehouseStock')) {
+    function updateWarehouseStock($productId, $variantId, $quantityChange)
+    {
+        // تدعم الخصم فقط في هذه النسخة
+        if ($quantityChange >= 0) {
+            throw new \Exception("هذه الدالة تعمل فقط في حالة الخصم.");
+        }
+
+        $requiredQty = abs($quantityChange);
+
+        $variantStocks = WarehouseProductVariant::whereHas('warehouseProduct', function ($query) use ($productId) {
+            $query->where('product_id', $productId);
+        })->where('variant_id', $variantId)
+          ->with('warehouseProduct.warehouse')
+          ->get();
+
+        $affected = [];
+
+        foreach ($variantStocks as $variantStock) {
+            $warehouse = $variantStock->warehouseProduct->warehouse ?? null;
+
+            if (!$warehouse || $warehouse->name == 'مخزن رئيسي') {
+                continue;
+            }
+
+            if ($variantStock->stock <= 0) {
+                continue;
+            }
+
+            $deductQty = min($requiredQty, $variantStock->stock);
+
+            $variantStock->stock -= $deductQty;
+            $variantStock->save();
+
+            $affected[] = [
+                'warehouse_id' => $warehouse->id,
+                'deducted'     => $deductQty,
+            ];
+
+            // تسجيل اللوج في ملف خاص
+            Log::channel('stock')->info('Stock movement logged', [
+                'action'       => 'deduct',
+                'warehouse_id' => $warehouse->id,
+                'product_id'   => $productId,
+                'variant_id'   => $variantId,
+                'quantity'     => $deductQty,
+                'remaining'    => $variantStock->stock,
+                'timestamp'    => now()->toDateTimeString(),
+                'initiator'    => auth()->id() ?? 'system',
+            ]);
+
+            $requiredQty -= $deductQty;
+
+            if ($requiredQty == 0) {
+                break;
+            }
+        }
+
+        if ($requiredQty > 0) {
+            throw new \Exception("المخزون غير كافي، تبقى $requiredQty قطعة لم يتم خصمها.");
+        }
+
+        return $affected;
+    }
+}
+
+if (!function_exists('isProductVariantOutOfStock')) {
+    function isProductVariantOutOfStock($productId, $variantId)
+    {
+        $totalStock = WarehouseProductVariant::whereHas('warehouseProduct', function ($query) use ($productId) {
+            $query->where('product_id', $productId)
+                  ->whereHas('warehouse', function ($q) {
+                      $q->where('name', '!=', 'مخزن رئيسي');
+                  });
+        })->where('variant_id', $variantId)
+          ->with('warehouseProduct.warehouse')
+          ->get()
+          ->sum('stock');
+
+        return $totalStock <= 0;
+    }
+}
+
+
+if (!function_exists('recalculateOrderTotal')) {
+    function recalculateOrderTotal($orderReference)
+    {
+        $order = order::where('reference', $orderReference)->firstOrFail();
+
+        // السعر القديم
+        $oldPrice = $order->price;
+
+        // جلب تفاصيل الأوردر
+        $details = orderDatail::where('order_id', $order->id)->get();
+
+        $newPrice = 0;
+
+        foreach ($details as $detail) {
+            $price = $detail->sell_price;
+
+            // إذا مفيش سعر، نحاول نجيبه من المنتج
+            // if (!$price || $price == 0) {
+                $product = product::find($detail->product_id);
+
+                if ($product && $product->sell_price > 0) {
+                    $price = $product->sell_price;
+
+                    // نحدّث السعر في order_details
+                    $detail->sell_price = $price;
+                    $detail->save();
+                }
+            // }
+
+            $newPrice += $price * $detail->qnt;
+        }
+
+        // تحديث حالة الطلب لو السعر زاد
+        if ($newPrice > $oldPrice) {
+            $order->status = 'pending';
+        }
+
+        $order->price = $newPrice;
+        $order->save();
+
+        return [
+            'old_price' => $oldPrice,
+            'new_price' => $newPrice,
+            'status'    => $order->status,
+        ];
+    }
 }

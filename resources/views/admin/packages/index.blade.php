@@ -71,7 +71,7 @@
                         </td>
 
                         {{-- <td>{{ $package->stage->name }}</td> --}}
-                        <td>Test</td>
+                        <td>{{ $package->stages->pluck('name')->join(', ')}}</td>
 
 
                         @if ($package->gender == 'boy')
@@ -224,7 +224,7 @@
 
         <div class="col-lg-6 col-12 group ">
             <label for="stage_id"  class="mb-2"> {{ trans('words.المرحلة') }}</label>
-            <select name="stage_id[]" multiple class="modelSelect w-100">
+            <select name="stage_id[]" multiple class=" w-100">
                 @foreach ($stages as $stage)
                     <option
                         value="{{ $stage->id }}"

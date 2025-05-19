@@ -1,4 +1,4 @@
-<form class="row form_style" action="/admin/students/{{ $user->id }}" method="post">
+<form class="row form_style" action="/admin/students/{{ $user->id }}" method="post" enctype="multipart/form-data">
 
     @csrf
     @method('put')
@@ -125,8 +125,63 @@
         </select>
     </div>
 
+        {{-- <x-form.input col="col-lg-3 col-6" class="date" label="تاريخ الميلاد" name="birth_date"
+        value="{{ optional($user->details)->birth_date }}"></x-form.input> --}}
 
 
+    <div class="col-lg-3 col-6 group">
+      <label for="division" class="mb-2">شعبة الطالب</label>
+      <select name="division" class="modelSelect">
+          <option @selected(optional($user->details)->division == 'أدبي') value="أدبي">أدبي</option>
+          <option @selected(optional($user->details)->division == 'علمي') value="علمي">علمي</option>
+          <option @selected(optional($user->details)->division == 'علمي علوم') value="علمي علوم">علمي علوم</option>
+          <option @selected(optional($user->details)->division == 'علمي رياضة') value="علمي رياضة">علمي رياضة</option>
+          <option @selected(optional($user->details)->division == 'ليس تابع للنظام الثانوي') value="ليس تابع للنظام الثانوي">ليس تابع للنظام الثانوي</option>
+      </select>
+    </div>
+    <div class="col-lg-3 col-6 group">
+      <label for="enrollment_status" class="mb-2">حالة قيد الطالب</label>
+      <select name="enrollment_status" class="modelSelect">
+          <option @selected(optional($user->details)->enrollment_status == 'منقول') value="منقول">منقول</option>
+          <option @selected(optional($user->details)->enrollment_status == 'مستجد') value="مستجد">مستجد</option>
+          <option @selected(optional($user->details)->enrollment_status == 'باقي عام') value="باقي عام">باقي عام</option>
+          <option @selected(optional($user->details)->enrollment_status == 'باقي عامين') value="باقي عامين">باقي عامين</option>
+          <option @selected(optional($user->details)->enrollment_status == 'منقطع') value="منقطع">منقطع</option>
+          <option @selected(optional($user->details)->enrollment_status == 'حالة وفاة') value="حالة وفاة">حالة وفاة</option>
+
+      </select>
+    </div>
+    <div class="col-lg-3 col-6 group">
+      <label for="second_language" class="mb-2">اللغة الثانية للطالب</label>
+      <select name="second_language" class="modelSelect">
+          <option value="NULL">-- اختر اللغة -- </option>
+          <option @selected(optional($user->details)->second_language == 'فرنساوي') value="فرنساوي">فرنساوي</option>
+          <option @selected(optional($user->details)->second_language == 'ايطالي') value="ايطالي">ايطالي</option>
+          <option @selected(optional($user->details)->second_language == 'ألماني') value="ألماني">ألماني</option>
+      </select>
+    </div>
+        <x-form.input placeHolder="قم بادخال كود الوزارة" col="col-lg-3 col-6"  label="كود الوزارة" name="ministry_code"
+        value="{{ optional($user->details)->ministry_code }}"></x-form.input>
+
+    <div class="col-12 check_group mb-3">
+        <label for="is_international"> هل الطالب وافد</label>
+        <input type="checkbox" name="is_international" id="is_international" @checked(optional($user->details)->is_international === 1)>
+    </div>
+
+        <x-form.input col="col-lg-3 col-6" class="date" label="تاريخ انتهاء الاقامة" name="residence_expiry_date"
+        value="{{ optional($user->details)->residence_expiry_date }}"></x-form.input>
+
+        <x-form.input col="col-lg-3 col-6"  label="اسم الطالب بالانجليزي" name="name_en"
+        value="{{ optional($user->details)->name_en }}"></x-form.input>
+
+        <x-form.input class="form-control" col="col-lg-3 col-12" onchange="checkAllForms()" type="file" accept="image/*"
+        label="صورة الطالب" name="student_image"></x-form.input>
+
+      @if(!empty($user->details->student_image))
+          <img src="{{ $user->details->student_image }}" alt="صورة الطالب" style="width: 150px; height: auto;">
+      @else
+          <p>لا توجد صورة</p>
+      @endif
     <div class="col-12 mt-3">
         <x-form.button id="submitBtn" title="{{ trans('words.btn_update') }}"></x-form.button>
 

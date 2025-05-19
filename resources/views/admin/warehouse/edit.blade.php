@@ -95,8 +95,11 @@
 
     <div class="actions border-0 mt-3">
         <x-admin.layout.back title="{{ trans('words.المنتجات') }}"></x-admin.layout.back>
-        <x-cr_button title="{{ trans('words.إضافة منتج') }}"></x-cr_button>
-
+        <div class="gy-2 gx-2 d-flex">
+          <x-cr_button title="{{ trans('words.إضافة منتج') }}"></x-cr_button>
+          <a style="margin-right: 10px" class="es-btn-primary ml-2" href="{{ route('stock.transfer.form', ['warehouse_id'=>$warehouse->id ]) }}">استلام</a>
+          <a style="margin-right: 10px" class="es-btn-primary ml-2" href="{{ route('warehouse.transfers', $warehouse->id) }}" class="btn btn-info">سجل التحويلات</a>
+        </div>
     </div>
 
     <div class="tableSpace">

@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class stage extends Model
 {
@@ -32,7 +33,10 @@ class stage extends Model
     {
         return $this->hasMany(Comment::class, 'stage_id');
     }
-
+    public function products()
+    {
+        return $this->belongsToMany(product::class, 'product_stage');
+    }
 
     public function packages()
     {

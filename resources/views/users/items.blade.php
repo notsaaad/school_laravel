@@ -35,7 +35,13 @@
 
 @section('content')
     <div class="content container mt-3">
-
+      @if(session('order_update'))
+          <div class="alert alert-info">
+              <p>السعر القديم: {{ session('order_update.old_price') }}</p>
+              <p>السعر الجديد: {{ session('order_update.new_price') }}</p>
+              <p>الحالة الحالية: {{ session('order_update.status') }}</p>
+          </div>
+      @endif
         <div class="sliderHeader w-100 px-1">
 
             @if (!request()->has('addTo'))

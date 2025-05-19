@@ -53,6 +53,15 @@
                     @endslot
                 </x-admin.layout.li>
             @endcan
+            @can('has', 'products_show')
+                <x-admin.layout.li class="productsoutofstock" path="admin/products/outofstock" title="خارج المخزون">
+                    @slot('icon')
+                        <div class="aside_icon">
+                            <i class="fa-solid fa-shop-slash"></i>
+                        </div>
+                    @endslot
+                </x-admin.layout.li>
+            @endcan
 
             @can('has', 'packages_show')
                 <x-admin.layout.li class="packages" path="admin/packages" title="{{ trans('words.الحزم') }}">
@@ -330,7 +339,7 @@
 
 
         @can('has', 'students_show')
-            <x-admin.layout.li class="students" path="admin/students" title="{{ trans('words.الطلاب') }}">
+            <x-admin.layout.li class="students" path="admin/students/type" title="{{ trans('words.الطلاب') }}">
                 @slot('icon')
                     <div class="aside_icon">
                         <svg width="22" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

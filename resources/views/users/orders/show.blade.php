@@ -271,9 +271,9 @@
 
 
 
-            <p class="total"> Package : <span>{{ $order->price() }} EGP</span></p>
-            <p class="total"> Service Fee : <span>{{ $order->fees() }} EGP</span></p>
-            <p class="total"> Total Package : <span>{{ $order->sell_price() }} EGP</span></p>
+            <p class="total"> Package : <span>{{ $order->getBasePrice() }} EGP</span></p>
+            <p class="total"> Service Fee : <span>{{ $order->getFees() }} EGP</span></p>
+            <p class="total"> Total Package : <span>{{ $order->getTotalPrice() }} EGP</span></p>
 
 
 

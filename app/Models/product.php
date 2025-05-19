@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\StockTransfer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class product extends Model
 {
@@ -15,9 +16,9 @@ class product extends Model
     protected $guarded = ["id"];
 
 
-    public function stage()
+    public function stages()
     {
-        return $this->belongsTo(stage::class, 'stage_id')->withTrashed();
+        return $this->belongsToMany(stage::class, 'product_stage')->withTrashed();
     }
 
     public function variants()
@@ -26,7 +27,10 @@ class product extends Model
     }
 
 
-
+public function packages()
+{
+    return $this->belongsToMany(Package::class, 'package_products');
+}
 
 
     public function warehouses()
@@ -35,6 +39,10 @@ class product extends Model
             ->withTimestamps();
     }
 
+        public function stockTransfers()
+    {
+        return $this->hasMany(StockTransfer::class);
+    }
 
 
 

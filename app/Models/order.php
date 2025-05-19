@@ -76,31 +76,24 @@ class order extends Model
     // order Data
 
 
-    public function fees()
-    {
-        $detailsSum = $this->details->map(function ($detail) {
-            return $detail->sell_price * $detail->qnt;
-        })->sum();
+      public function getBasePrice()
+      {
+          if ($this->type === 'package') {
+              return $this->price;
+          }
 
-        return ($this->price + $detailsSum) * $this->service_expenses / 100;
-    }
+          return $this->details->sum(fn($d) => $d->sell_price * $d->qnt);
+      }
 
+      public function getFees()
+      {
+          return $this->getBasePrice() * ($this->service_expenses / 100);
+      }
 
-    public function price()
-    {
-        $detailsSum = $this->details->map(function ($detail) {
-            return $detail->sell_price * $detail->qnt;
-        })->sum();
-
-        return  $this->price + $detailsSum;
-    }
-
-
-
-    public function sell_price()
-    {
-        return $this->price() + $this->fees();
-    }
+      public function getTotalPrice()
+      {
+          return $this->getBasePrice() + $this->getFees();
+      }
 
 
     public function amount_received()

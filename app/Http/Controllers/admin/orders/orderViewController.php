@@ -23,17 +23,22 @@ class orderViewController extends Controller
     function show($reference)
     {
         $order = order::where("reference", $reference)->firstOrFail();
-
+        // return $order;
         return view("admin.orders.show", compact("order"));
+
     }
     function CustomDelivering(Request $request){
-        $OrginalRequestOrder = $request->orders;
-        $code = $request->code;
-        $orders = explode('-', $OrginalRequestOrder);
-        $time = now();
-        foreach ($orders as $order) {
-            DB::table('order_datails')->where('id', $order)->update(['picked'=>1, 'picked_at'=> $time ]);
-        }
+        // return $request;
+        $order = order::where('reference', $request->code)->firstOrFail();
+        $order->status = "to be confirmed";
+        $order->save();
+        // $OrginalRequestOrder = $request->orders;
+        $code                = $request->code;
+        // $orders              = explode('-', $OrginalRequestOrder);
+        // $time                = now();
+        // foreach ($orders as $order) {
+        //     DB::table('order_datails')->where('id', $order)->update(['picked'=>1, 'picked_at'=> $time ]);
+        // }
         return redirect()->route('order.single_order', $code)->with(['success'=>'تم التسليم بنجاح']);
     }
     public function GetOrderDetailsAjax($id)

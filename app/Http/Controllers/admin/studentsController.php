@@ -15,6 +15,8 @@ use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 
 class studentsController extends Controller
@@ -34,12 +36,22 @@ class studentsController extends Controller
         }
     }
 
+    public function choosType(){
+      return view('admin.students.chooseUser');
+    }
+
     public function index()
     {
-        $students = user::where("role", "user")->orderBy("id", "desc")->withTrashed()->simplePaginate(50);
+        $studentsQuery = User::where("role", "user")->withTrashed();
 
-        $stages = stage::get();
+        if (request()->filled('type')) {
+            $studentsQuery->whereHas('details', function ($q) {
+                $q->where('study_type', request('type'));
+            });
+        }
 
+        $students = $studentsQuery->orderBy("id", "desc")->simplePaginate(50);
+        $stages = Stage::get();
 
         return view('admin/students/index', compact('students', "stages"));
     }
@@ -56,28 +68,45 @@ class studentsController extends Controller
             'gender' => $request->gender ?? '',
             'own_package' => $request->own_package ?? '',
             'stage_id' => $request->stage_id ?? '',
+            'study_type' => $request->type
+
         ];
 
         $deleted = $request->deleted ?? '';
 
-        $students = User::where("role", "user")->where(function ($query) use ($filters) {
-            foreach ($filters as $key => $value) {
-                if ($value !== '') {
-                    $query->where($key, 'LIKE', "%{$value}%");
-                }
-            }
-        })->orderBy('id', 'desc');
+          $studentsQuery = User::where("role", "user");
+
+          // التحكم في السجلات المحذوفة
+          match ($deleted) {
+              "yes"     => $studentsQuery = $studentsQuery->onlyTrashed(),
+              ""        => $studentsQuery = $studentsQuery->withTrashed(),
+              default   => $studentsQuery = $studentsQuery, // الحالة الافتراضية
+          };
+
+          // باقي الفلاتر والديناميكية:
+          $studentsQuery = $studentsQuery->where(function ($query) use ($filters) {
+              foreach ($filters as $key => $value) {
+                  if ($value !== '' && $key !== 'study_type') {
+                      $query->where($key, 'LIKE', "%{$value}%");
+                  }
+              }
+          });
+
+          if (!empty($filters['study_type'])) {
+              $studentsQuery->whereHas('details', function ($q) use ($filters) {
+                  $q->where('study_type', 'LIKE', "%{$filters['study_type']}%");
+              });
+          }
+
+          // تنفيذ الكويري مع pagination
+          $students = $studentsQuery->orderBy('id', 'desc')->simplePaginate(50);
 
 
-        match ($deleted) {
-            "yes" => $students = $students->onlyTrashed(),
-            "" => $students = $students->withTrashed(),
-            default  => "",
-        };
+
 
 
         if (!isset($request->export)) {
-            $students = $students->simplePaginate(50);
+            // $students = $students->simplePaginate(50);
             $stages = stage::get();
 
             return view('admin.students.index', compact('students', "stages"));
@@ -116,13 +145,14 @@ class studentsController extends Controller
     {
 
         $data = $request->validate([
-            "name" => "required|string",
-            "email" => "nullable|email",
-            "mobile" => "nullable",
-            "stage_id" => "required",
-            "code" => "required",
-            "gender" => "required",
+            "name"        => "required|string",
+            "email"       => "nullable|email",
+            "mobile"      => "nullable",
+            "stage_id"    => "required",
+            "code"        => "required",
+            "gender"      => "required",
             "own_package" => "required",
+            "type"        => 'required',
         ], [
             "email.email" => "هذه ليست صيغة ايميل صحيحية",
             "stage_id.required" => "يرجي اختيار مرحلة",
@@ -136,7 +166,14 @@ class studentsController extends Controller
         $data["role"] = "user";
         $data["password"] = bcrypt("12345678");
 
-        User::create($data);
+        $user    = User::create($data);
+        $details = $user->details;
+        if ($details) {
+            $details->study_type = $data['type'];
+            $details->save();
+        } else {
+            $user->details()->create(['study_type' => $data['type']]);
+        }
 
         return Redirect::back()->with("success", "تم الاضافة بنجاح");
     }
@@ -166,124 +203,95 @@ class studentsController extends Controller
   }
     public function update(Request $request, user $user)
     {
+// تحقق من البيانات الأساسية
+$data = $request->validate([
+    "name" => "required|string",
+    "email" => "nullable|email",
+    "mobile" => "nullable",
+    "stage_id" => "required",
+    "code" => "required",
+    "gender" => "required",
+    "active" => "required",
+    "own_package" => "required",
+], [
+    "email.email" => "هذه ليست صيغة ايميل صحيحة",
+    "stage_id.required" => "يرجى اختيار مرحلة",
+]);
 
-        $data = $request->validate([
-            "name" => "required|string",
-            "email" => "nullable|email",
-            "mobile" => "nullable",
-            "stage_id" => "required",
-            "code" => "required",
-            "gender" => "required",
-            "active" => "required",
-            "own_package" => "required",
-        ], [
-            "email.email" => "هذه ليست صيغة ايميل صحيحية",
-            "stage_id.required" => "يرجي اختيار مرحلة",
+// تحقق من بيانات الطالب الإضافية
+$extra = $request->validate([
+    'study_type' => 'nullable|in:national,international',
+    'division' => 'nullable|in:أدبي,علمي,علمي علوم,علمي رياضة,ليس تابع للنظام الثانوي',
+    'join_date' => 'nullable|date',
+    'national_id' => 'nullable|numeric|digits:14',
+    'region_id' => 'nullable|numeric',
+    'birth_date' => 'nullable|date',
+    'religion' => 'nullable|string',
+    'nationality_id' => 'nullable|numeric',
+    'is_international' => 'nullable|boolean',
+    'residence_expiry_date' => 'nullable|date',
+    'name_en' => 'nullable|string',
+    'enrollment_status' => 'nullable|in:منقول,مستجد,باقي عام,باقي عامين,منقطع,حالة وفاة',
+    'student_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    'second_language' => 'nullable|string',
+    'ministry_code'   => 'nullable|string',
+]);
 
-        ]);
+$data['permissions'] = '[]';
 
+DB::beginTransaction();
 
-        $extra = $request->validate([
-            'study_type' => 'nullable|in:national,international',
-            'join_date' => 'nullable',
-            'national_id' => 'nullable|numeric|digits:14',
-            'region_id' => 'nullable',
-            'birth_date' => 'nullable',
-            'religion' => 'nullable',
-            'nationality_id' => 'nullable',
-        ]);
+try {
+    // معالجة الرقم القومي (National ID)
+    if (!empty($request->national_id) && strlen($request->national_id) === 14) {
+        $nat_id = $request->national_id;
 
+        $century = $nat_id[0] == '2' ? '19' : '20';
+        $year = $century . $nat_id[1] . $nat_id[2];
+        $month = $nat_id[3] . $nat_id[4];
+        $day = $nat_id[5] . $nat_id[6];
+        $birthdate = sprintf('%04d-%02d-%02d', $year, $month, $day);
 
-        $data['permissions'] = '[]';
+        $region_code = $nat_id[7] . $nat_id[8];
+        $region_id = (int) $this->getmo7afza($region_code);
 
-        // try {
-          if (!empty($request->national_id)) {
-            // return "FROM TRUE IF";
-            $nat_id = $request->national_id;
-            $count = strlen($nat_id);
+        $serial = $nat_id[12];
+        $gender = ((int)$serial % 2 === 0) ? 'girl' : 'boy';
 
-            if ($count === 14 && $nat_id) {
-                // تحديد الكود الأول لتحديد القرن
-                $code_el_mo7afza = $nat_id[0];
+        $extra['birth_date'] = $birthdate;
+        $extra['region_id'] = $region_id;
+        $data['gender'] = $gender;
+    } else {
+        $extra['birth_date'] = null;
+        $extra['region_id'] = null;
+        $extra['national_id'] = null;
+        $data['gender'] = null;
+    }
 
-                // بناء السنة
-                if ($code_el_mo7afza == 2) {
-                    $year = "19" . $nat_id[1] . $nat_id[2];
-                } else {
-                    $year = "20" . $nat_id[1] . $nat_id[2];
-                }
+    // تحديث بيانات المستخدم الأساسية
+    $user->update($data);
 
-                // الشهر واليوم
-                $month = $nat_id[3] . $nat_id[4];
-                $day = $nat_id[5] . $nat_id[6];
+    // التأكد من وجود تفاصيل الطالب
+    $studentDetails = $user->details()->firstOrCreate(['student_id' => $user->id]);
 
-                // تاريخ الميلاد بصيغة Y-m-d
-                $birthdate = sprintf('%04d-%02d-%02d', $year, $month, $day);
+    // التعامل مع رفع صورة الطالب إن وجدت
+    if ($request->hasFile('student_image')) {
+        $image = $request->file('student_image');
+        $imageName = 'student_' . $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+        $path = $image->storeAs('public/students', $imageName);
+        $extra['student_image'] = Storage::url($path);
+    }
 
-                // كود المحافظة = رقمين
-                $region_code = $nat_id[7] . $nat_id[8];
+    // تحديث أو إنشاء تفاصيل الطالب
+    $studentDetails->update($extra);
 
-                // جلب ID المحافظة من جدول المحافظات
-                // return $region_code;
-                $region_id = (int) $this->getmo7afza($region_code);
-                $serial = $nat_id[12]; // الرقم قبل الأخير
-                $gender = ((int)$serial % 2 === 0) ? 'girl' : 'boy';
-                // return "$region_code -- $region_id";S
-                // DB::beginTransaction();
+    DB::commit();
 
-                User::where('id', $user->id)->update(['gender' => $gender]);
-
-                studentDetail::where('student_id', $user->id)->update([
-                    'birth_date' => $birthdate,
-                    'region_id'  => $region_id,
-                ]);
-
-                DB::commit();
-
-                // return "$birthdate --- $region_id -- $user->id";
-            }
-        }else{
-          // return "FROM ELSE $user->id";
-          // DB::beginTransaction();
-          $userModel = User::find($user->id);
-          $userModel->gender = null;
-          $userModel->save();
-
-          $student = studentDetail::where('student_id', $user->id)->first();
-          $student->birth_date = null;
-          $student->region_id = null;
-          $student->national_id = null;
-          $student->save();
-        }
-        // DB::beginTransaction();
-        // DB::commit();
-
-        $user->update($data);
-
-
-
-
-
-
-        $studentDetails = $user->details()->first();
-        if (!$studentDetails) {
-            $studentDetails = $user->details()->create();
-        }
-
-
-
-        $studentDetails->update($extra);
-
-
-        DB::commit();
-
-
-        return Redirect::back()->with("success", "تم التعديل بنجاح");
-        // } catch (\Throwable $th) {
-
-        //     DB::rollBack();
-        //     return Redirect::back()->with("error", "لم يتم التعديل");
-        // }
+    return Redirect::back()->with("success", "تم التعديل بنجاح");
+} catch (\Throwable $th) {
+    DB::rollBack();
+    return Redirect::back()->with("error", "حدث خطأ أثناء التعديل: " . $th->getMessage());
+}
     }
 
     public function updateOther(Request $request, user $user)

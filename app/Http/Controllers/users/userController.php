@@ -272,15 +272,30 @@ class userController extends Controller
 
 
             $products = product::where(function ($query) {
-                $query->where('gender', auth()->user()->gender)
-                    ->orWhere('gender', 'both');
-            })->where("stage_id", auth()->user()->stage_id)->where("show", "1")->whereIn("id", $products_ids)->get();
+                    $query->where('gender', auth()->user()->gender)
+                          ->orWhere('gender', 'both');
+                })
+                ->where('show', '1')
+                ->whereIn('id', $products_ids)
+                ->whereHas('stages', function ($q) {
+                    $q->where('stage_id', auth()->user()->stage_id);
+                })
+                ->get();
+
+
         } else {
 
             $products = product::where(function ($query) {
-                $query->where('gender', auth()->user()->gender)
-                    ->orWhere('gender', 'both');
-            })->where("stage_id", auth()->user()->stage_id)->where("show", "1")->get();
+                    $query->where('gender', auth()->user()->gender)
+                          ->orWhere('gender', 'both');
+                })
+                ->where('show', '1')
+                // ->whereIn('id', $products_ids)
+                ->whereHas('stages', function ($q) {
+                    $q->where('stage_id', auth()->user()->stage_id);
+                })
+                ->get();
+
         }
 
 
@@ -318,10 +333,10 @@ class userController extends Controller
         $variant = variant::where("product_id", $data["product_id"])->findOrFail($data["variant_id"]);
 
 
-        if (auth()->user()->role == "user" && !$variant->canMakeOrderInThisVairant()) {
-            DB::rollBack();
-            return  redirect()->back()->with("error", 'You cannot make an order on this product Now .');
-        }
+        // if (auth()->user()->role == "user" && !$variant->canMakeOrderInThisVairant()) {
+        //     DB::rollBack();
+        //     return  redirect()->back()->with("error", 'You cannot make an order on this product Now .');
+        // }
 
 
 

@@ -15,7 +15,18 @@ Route::get('home', function () {
 });
 
 Route::get('packages', function () {
-    $packages = package::where("stage_id", auth()->user()->stage_id)->where("gender", auth()->user()->gender)->get();
+    // $packages = package::where("stage_id", auth()->user()->stage_id)->where("gender", auth()->user()->gender)->get();
+    $user    = auth()->user();
+    $stage   = $user->stage_id;
+    $gender  = $user->gender;
+
+    $packages = Package::where(function ($query) use ($gender) {
+        $query->where('gender', $gender)
+              ->orWhere('gender', 'both');
+    })->whereHas('stages', function ($q) use ($stage) {
+        $q->where('stage_id', $stage);
+    })->get();
+
     return view("users/packages", get_defined_vars());
 });
 

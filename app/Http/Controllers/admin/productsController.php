@@ -114,58 +114,70 @@ class productsController extends Controller
 
     public function store(Request $request)
     {
-
-
-
         $data = $request->validate([
-            "name" => "required",
-            "stage_id" => "required",
-            "stock" => "required|min:0",
-            "img" => "nullable|mimes:jpeg,png,jpg,gif,webp",
-            "gender" => "required",
-            "price" => "required",
-            "sell_price" => "required",
-            'variants.*.size' => 'nullable|string|max:255',
-            'variants.*.quantity' => 'nullable|integer|min:0',
-        ], [
-            "stage_id.required" => "يرجي اختيار مرحلة",
-        ]);
+                "name" => "required",
+                "stage_id" => "required|array|min:1",       // ← نسمح بتعدد المراحل
+                "stage_id.*" => "exists:stages,id",         // ← تحقق من صلاحية كل مرحلة
+                "stock" => "required|integer|min:0",
+                "img" => "nullable|mimes:jpeg,png,jpg,gif,webp",
+                "gender" => "required",
+                "price" => "required|numeric",
+                "sell_price" => "required|numeric",
+                'variants.*.size' => 'nullable|string|max:255',
+                'variants.*.quantity' => 'nullable|integer|min:0',
+            ], [
+                "stage_id.required" => "يرجي اختيار مرحلة واحدة على الأقل",
+            ]);
 
-
-        if ($data["sell_price"] < $data["price"]) {
-            return redirect()->back()->with("error", "لا يمكن ان يكون سعر البيع اقل من سعر المنتج");
-        }
-
-        DB::beginTransaction();
-
-        $data["sku"] = generateProductSKU();
-
-
-        if (isset($data["img"])) {
-            $data["img"] = Storage::put("public/products", $data["img"]);
-        }
-
-        $product = product::create($data);
-
-        if (isset($data["variants"])) {
-            foreach ($data["variants"] as $variant) {
-
-                if (variant::where("value", $variant["size"])->where("product_id", $product->id)->exists()) {
-                    DB::rollBack();
-                    return redirect()->back()->with("error", "الخاصية" . " " . $variant["size"] . " " . "موجودة من قبل");
-                }
-                variant::create([
-                    "product_id" => $product->id,
-                    "value" => $variant["size"],
-                    "stock" => $variant["quantity"],
-                ]);
+            if ($data["sell_price"] < $data["price"]) {
+                return redirect()->back()->with("error", "لا يمكن أن يكون سعر البيع أقل من سعر التكلفة");
             }
-        }
 
-        DB::commit();
+            DB::beginTransaction();
 
+            try {
+                // تخزين الصورة لو تم رفعها
+                if (isset($data["img"])) {
+                    $data["img"] = Storage::put("public/products", $data["img"]);
+                }
 
-        return redirect()->back()->with("success", "تم الاضافة بنجاح");
+                // استخراج المراحل
+                $stageIds = $data["stage_id"];
+                unset($data["stage_id"]);
+
+                // توليد SKU
+                $data["sku"] = generateProductSKU();
+
+                // إنشاء المنتج
+                $product = Product::create($data);
+
+                // ربط المراحل بالمنتج
+                $product->stages()->sync($stageIds);
+
+                // التعامل مع الـ Variants إن وجدت
+                if (isset($data["variants"])) {
+                    foreach ($data["variants"] as $variant) {
+                        $size = $variant["size"] ?? null;
+
+                        if ($size && Variant::where("value", $size)->where("product_id", $product->id)->exists()) {
+                            DB::rollBack();
+                            return redirect()->back()->with("error", "الخاصية \"" . $size . "\" موجودة من قبل");
+                        }
+
+                        Variant::create([
+                            "product_id" => $product->id,
+                            "value" => $size,
+                            "stock" => $variant["quantity"] ?? 0,
+                        ]);
+                    }
+                }
+
+                DB::commit();
+                return redirect()->back()->with("success", "تمت إضافة المنتج بنجاح");
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return redirect()->back()->with("error", "حدث خطأ أثناء الحفظ: " . $e->getMessage());
+            }
     }
 
     function showHideProduct(Request $request)
@@ -220,23 +232,34 @@ class productsController extends Controller
     {
         $data = $request->validate([
             "name" => "required",
-            "stage_id" => "required",
+            "stage_id" => "required|array|min:1",          // تعديل هنا
+            "stage_id.*" => "exists:stages,id",            // تحقق من كل ID
             "img" => "nullable|mimes:jpeg,png,jpg,gif,webp",
             "gender" => "required",
-            "price" => "required",
-            "sell_price" => "required",
-            "show" => "required",
-            "stock" => "required|min:0",
+            "price" => "required|numeric",
+            "sell_price" => "required|numeric",
+            "show" => "required|boolean",
+            "stock" => "required|integer|min:0",
         ], [
-            "stage_id.required" => "يرجي اختيار مرحلة",
+            "stage_id.required" => "يرجي اختيار مرحلة واحدة على الأقل",
         ]);
 
+        // حفظ مراحل المنتج
+        $stageIds = $data["stage_id"];
+        unset($data["stage_id"]); // لا نحدثها كعمود مباشر لأنها في جدول وسيط
+
+        // حفظ الصورة الجديدة إن وُجدت
         if (isset($data["img"])) {
             $data["img"] = Storage::put("public/products", $data["img"]);
         }
 
+        // تحديث بيانات المنتج الأساسية
         $product->update($data);
 
+        // تحديث المراحل المرتبطة بالمنتج
+        $product->stages()->sync($stageIds);
+
+        // إرجاع رسالة نجاح
         return redirect()->back()->with("success", "تم التعديل بنجاح");
     }
 
@@ -357,4 +380,30 @@ class productsController extends Controller
             return json(["status" => "no_variant"]);
         }
     }
+      function outOfStock(){
+      $variants = variant::with(['product', 'warehouseProductVariants.warehouseProduct.warehouse'])
+          ->get()
+          ->filter(function ($variant) {
+              return $variant->warehouseProductVariants->sum('stock') == 0;
+          })
+          ->map(function ($variant) {
+              $variant->total_orders = DB::table('order_datails')
+                  ->where('variant_id', $variant->id)
+                  ->sum('qnt');
+
+              // جلب أسماء المستودعات المرتبطة من خلال العلاقات المتسلسلة
+              $variant->warehouses = $variant->warehouseProductVariants
+                  ->map(fn($wpv) => optional($wpv->warehouseProduct)->warehouse)
+                  ->filter()
+                  ->unique('id');
+
+              return $variant;
+          });
+
+          // return $variants;
+        return view('admin.products.outofstock', compact('variants'));
+      }
 }
+
+
+

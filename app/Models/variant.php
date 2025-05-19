@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\WarehouseProductVariant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class variant extends Model
 {
@@ -48,6 +49,28 @@ class variant extends Model
     }
 
 
+
+
+      public function warehouseProducts()
+      {
+          return $this->hasManyThrough(
+              WarehouseProduct::class,
+              WarehouseProductVariant::class,
+              'variant_id',      // Foreign key on WarehouseProductVariant
+              'id',              // Foreign key on WarehouseProduct
+              'id',              // Local key on Variant
+              'warehouse_product_id' // Local key on WarehouseProductVariant
+          );
+      }
+
+      public function warehouses()
+      {
+          return $this->warehouseProducts->map(function ($wp) {
+              return $wp->warehouse;
+          })->unique('id');
+      }
+
+
     function  canMakeOrderInThisVairant()
     {
         if ($this->product->show == "0") {
@@ -62,4 +85,9 @@ class variant extends Model
 
         return true;
     }
+
+    public function warehouseProductVariants()
+{
+    return $this->hasMany(WarehouseProductVariant::class);
+}
 }

@@ -2332,6 +2332,10 @@ aside.aside_collapse:hover .form-switch {
     box-shadow: none !important;
 }
 
+.orderStatus.to.be.confirmed {
+  background-color: #d5e1d9;
+  color: #939019 !important;
+}
 .orderStatus.picked {
     background-color: #d1fadf;
     color: #054f31 !important;

@@ -48,7 +48,9 @@ class warehouseController extends Controller
   {
 
 
-    $products = product::whereDoesntHave('warehouses')->get();
+    $products = Product::whereDoesntHave('warehouses', function($query) use ($warehouse) {
+      $query->where('warehouse_id', $warehouse->id);
+      })->get();
 
     $warehouseProducts = WarehouseProduct::with(['product', 'variants.variant'])
       ->where('warehouse_id', $warehouse->id)
@@ -99,12 +101,16 @@ class warehouseController extends Controller
     ]);
 
     $warehouse = Warehouse::find($data["warehouse_id"]);
-
+    $warehouseId = $data["warehouse_id"];
     try {
       DB::beginTransaction();
 
       foreach ($data["products"] as $productId) {
-        $product = product::whereDoesntHave('warehouses')->find($productId);
+        $product = Product::where('id', $productId)
+        ->whereDoesntHave('warehouses', function ($query) use ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        })
+        ->first();
 
         if ($product) {
           $warehouseProduct = WarehouseProduct::firstOrCreate([
@@ -157,4 +163,21 @@ class warehouseController extends Controller
 
     return redirect()->back()->with("error", "المنتج غير موجود في المخزن");
   }
+
+public function availableProducts($warehouseId)
+{
+    $variants = WarehouseProductVariant::with(['variant', 'warehouseProduct.product'])
+        ->whereHas('warehouseProduct', function ($q) use ($warehouseId) {
+            $q->where('warehouse_id', $warehouseId);
+        })
+        ->where('stock', '>', 0)
+        ->get();
+
+    return response()->json($variants->map(function ($item) {
+        return [
+            'variant_id' => $item->variant->id,
+            'label' => $item->warehouseProduct->product->name . ' - ' . $item->variant->value . ' (المتوفر: ' . $item->stock . ')',
+        ];
+    }));
+}
 }

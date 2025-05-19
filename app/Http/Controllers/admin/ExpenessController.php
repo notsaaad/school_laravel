@@ -6,6 +6,7 @@ use App\Models\year;
 use App\Models\stage;
 use App\Models\yearcost;
 use Illuminate\Http\Request;
+use App\Models\YearCostStage;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Redirect;
@@ -133,7 +134,18 @@ class ExpenessController extends Controller
         return view('admin.Expeness.yearcost_stage', compact('data'));
     }
     function storeyearcostupdate(Request $request){
-        return $request;
+        foreach ($request->row as $row) {
+          $record = YearCostStage::find($row['id']);
+
+          if ($record) {
+              $record->update([
+                  'cash' => $row['cash'],
+                  'installment' => $row['installment'],
+                  'book' => $row['book'],
+              ]);
+          }
+        }
+        return back()->with('success', 'تم التحديث بنجاح');
     }
 
     function add_new_system(){

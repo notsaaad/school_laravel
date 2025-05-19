@@ -131,7 +131,7 @@ class orderLogicController extends Controller
 
 
 
-            if ($order->sell_price() <= $order->amount_received()) {
+            if ($order->getTotalPrice() <= $order->amount_received()) {
                 $order->update([
                     "status" => "paid"
                 ]);
@@ -183,6 +183,8 @@ class orderLogicController extends Controller
 
         $vairant_in_warehouse = $orderDatail->variant->get_vairant_in_warehouse();
 
+
+
         if (is_null($vairant_in_warehouse)) {
             return json(["status" => "error", "message" => "هذا المنتج لا يوجد في اي مخزن فرعي"]);
         } else {
@@ -195,6 +197,9 @@ class orderLogicController extends Controller
         if ($vairant_in_warehouse->stock  < $orderDatail->qnt) {
             return json(["status" => "error", "message" => "الكمية المتاحة في المخزن لا تساوي الكمية المطلوبة"]);
         }
+        // if (isProductVariantOutOfStock($orderDatail->product_id,$vairant_in_warehouse)) {
+        //     return json(["status" => "error", "message" => "الكمية المتاحة في المخزن لا تساوي الكمية المطلوبة"]);
+        // }
 
 
 

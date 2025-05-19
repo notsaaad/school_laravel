@@ -50,7 +50,7 @@
                                             class="fa-regular fa-clipboard"></i></span> <a
                                         href="/students/orders/{{ $order->reference }}">{{ $order->reference }}</a> </td>
                                 <td>{{ $order->package->name ?? 'items' }}</td>
-                                <td>{{ $order->sell_price() }} EGP</td>
+                                <td>{{ $order->getTotalPrice() }} EGP</td>
                                 <td><span class="orderStatus {{ $order->status }} ">{{ $order->status }} </span>
                                 </td>
                                 <td>{{ fixDate($order->created_at) }}</td>

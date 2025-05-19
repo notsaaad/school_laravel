@@ -23,11 +23,13 @@ use App\Http\Controllers\definitionsController;
 use App\Http\Controllers\admin\packageController;
 use App\Http\Controllers\admin\PaymentController;
 use App\Http\Controllers\admin\regionsController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\admin\ExpenessController;
 use App\Http\Controllers\admin\invoicesController;
 use App\Http\Controllers\admin\productsController;
 use App\Http\Controllers\admin\studentsController;
 use App\Http\Controllers\admin\transfersController;
+use App\Http\Controllers\admin\UsersUserController;
 use App\Http\Controllers\admin\warehouseController;
 use App\Http\Controllers\admin\applicationsController;
 use App\Http\Controllers\admin\customStatusController;
@@ -35,7 +37,7 @@ use App\Http\Controllers\admin\dynamicFieldsController;
 use App\Http\Controllers\admin\orders\orderViewController;
 use App\Http\Controllers\admin\orders\orderLogicController;
 use App\Http\Controllers\admin\statistics\ApplicationSatiController;
-use App\Http\Controllers\users\userController as UsersUserController;
+// use App\Http\Controllers\users\userController as UsersUserController;
 
 Route::get('home', function () {
     return view("admin/home");
@@ -85,8 +87,9 @@ Route::prefix("roles")->middleware("checkRole:roles")->group(function () {
 Route::prefix("students")->group(function () {
 
     Route::middleware('checkRole:students_show')->group(function () {
-        Route::get('/', [studentsController::class, 'index']);
+        Route::get('/', [studentsController::class, 'index'])->name('admin.student.index');
         Route::get('search', [studentsController::class, 'search']);
+        Route::get('/type', [studentsController::class, 'choosType'])->name('admin.students.chooseType');
     });
 
     Route::middleware('checkRole:students_action')->group(function () {
@@ -150,6 +153,7 @@ Route::prefix("products")->group(function () {
         Route::DELETE('destroy', [productsController::class, 'destroy']);
         Route::get('restore/{id}', [productsController::class, 'restore']);
         Route::post('showHideProduct', [productsController::class, 'showHideProduct']);
+        Route::get('/outofstock', [productsController::class, 'outOfStock'])->name('products.out_of_stock');
     });
 
 
@@ -243,12 +247,21 @@ Route::prefix("warehouses")->middleware('checkRole:warehouses')->group(function 
     Route::post('products', [warehouseController::class, 'products']);
     Route::DELETE('{warehouse}/products/destroy', [warehouseController::class, 'products_destroy']);
 
-    Route::get('{warehouse}/edit', [warehouseController::class, 'edit']);
+    Route::get('{warehouse}/edit', [warehouseController::class, 'edit'])->name('admin.warehouse.edit');
     Route::put('{warehouse}', [warehouseController::class, 'update']);
     Route::put('/', [warehouseController::class, 'update']);
     Route::delete('destroy', [warehouseController::class, 'destroy']);
     Route::get('changeOrder', [warehouseController::class, 'changeOrder']);
+    Route::get('/{id}/available-products', [warehouseController::class, 'availableProducts'])->name('admin.warehouses.availableProducts');
 });
+
+
+Route::get('/stock/transfer', [StockTransferController::class, 'create'])->name('stock.transfer.form');
+Route::post('/stock/transfer', [StockTransferController::class, 'store'])->name('stock.transfer');
+Route::get('/warehouse-transfers/{warehouse}', [StockTransferController::class, 'showTransfers'])->name('warehouse.transfers');
+
+
+
 
 
 
@@ -317,16 +330,22 @@ Route::prefix("fees")->middleware('checkRole:fees_show')->group(function () {
 Route::get('items/{user}', function (User $user) {
 
 
+
     $packages_ids = order::where("status", "picked")->where("user_id", $user->id)->distinct()->pluck("package_id")->unique("package_id")->toArray();
 
 
     $products_ids = packageProduct::whereIn("package_id", $packages_ids)->distinct()->pluck("product_id")->toArray();
 
-
-    $products = product::where(function ($query) use ($user) {
-        $query->where('gender', $user->gender)
-            ->orWhere('gender', 'both');
-    })->where("stage_id", $user->stage_id)->where("show", "1")->whereIn("id", $products_ids)->get();
+    $products = Product::where(function ($query) use ($user) {
+            $query->where('gender', $user->gender)
+                  ->orWhere('gender', 'both');
+        })
+        ->where('show', '1')
+        // ->whereIn('id', $products_ids)
+        ->whereHas('stages', function ($q) use ($user) {
+            $q->where('stage_id', $user->stage_id);
+        })
+        ->get();
 
     return view("users.items", compact("products"));
 });

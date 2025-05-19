@@ -154,7 +154,20 @@ class packageController extends Controller
     {
         $stages = stage::get();
 
-        $products = product::where("gender",  $package->gender)->where("stage_id", $package->stage_id)->get();
+        $stageIds = $package->stages->pluck('id')->toArray();
+
+        $products = Product::when($package->gender !== 'both', function ($query) use ($package) {
+                $query->where('gender', $package->gender);
+            })
+            ->whereHas('stages', function ($query) use ($stageIds) {
+                $query->whereIn('stage_id', $stageIds);
+            })
+            ->whereDoesntHave('packages', function ($query) use ($package) {
+                $query->where('package_id', $package->id);
+            })
+            ->get();
+
+        // return $products;
 
         return view('admin/packages/edit', compact('stages', "package", "products"));
     }

@@ -4,6 +4,13 @@
     <title>{{ trans('words.الطلاب') }}</title>
 @endsection
 
+@section('css')
+  <style>
+    #searchModel  .delete{
+      display:none !important;
+    }
+  </style>
+@endsection
 
 @section('content')
 
@@ -15,7 +22,9 @@
             <div class="d-flex gap-2 flex-wrap">
 
                 <x-search_button></x-search_button>
-
+                  @if(request()->has('name'))
+                    <a href="{{ route('admin.student.index', request()->except('name')) }}" class="delete">ازالة الفلتر</a>
+                  @endif
                 <x-excel_button></x-excel_button>
 
                 <x-upload_button></x-upload_button>
@@ -142,6 +151,7 @@
         <x-form.input value="{{ $_GET['code'] ?? '' }}" type="search" label="{{ trans('words.كود الطالب') }}"
             name="code"></x-form.input>
 
+        <input type="hidden" name="type" value={{ $_GET['type'] }}>
 
         <x-form.input value="{{ $_GET['email'] ?? '' }}" type="search" col="col-lg-6 col-12"
             label="{{ trans('words.email') }}" name="email"></x-form.input>
@@ -203,7 +213,7 @@
                 <x-form.input required label="{{ trans('words.كود الطالب') }}" name="code">
                 </x-form.input>
 
-
+                <input type="hidden" name="type" value="{{ $_GET['type'] }}">
                 <x-form.select reqiured name="stage_id" label="{{ trans('words.المرحلة') }}">
 
                     @foreach ($stages as $stage)

@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\StockTransfer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class warehouse extends Model
 {
@@ -37,5 +38,15 @@ class warehouse extends Model
             'id',                              // Local key on warehouses table
             'product_id'                       // Local key on warehouse_products table
         )->with('variants');                  // Eager load variants
+    }
+
+        public function stockTransfersFrom()
+    {
+        return $this->hasMany(StockTransfer::class, 'from_warehouse_id');
+    }
+
+    public function stockTransfersTo()
+    {
+        return $this->hasMany(StockTransfer::class, 'to_warehouse_id');
     }
 }

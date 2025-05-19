@@ -84,14 +84,14 @@
             </div>
 
 
-            <div class="col-lg-3 col-6">
+            {{-- <div class="col-lg-3 col-6">
                 <div class="section">
                     <img src="/assets/users/imgs/event.svg">
 
                     <p class="section_title">Events</p>
 
                 </div>
-            </div>
+            </div> --}}
             {{--
             <div class="col-lg-3 col-6">
                 <div class="section">

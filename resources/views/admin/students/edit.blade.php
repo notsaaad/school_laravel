@@ -19,7 +19,7 @@
 
 @section('content')
     <div class="actions border-0">
-        <x-admin.layout.back back="admin/students"
+        <x-admin.layout.back back="admin/students?type={{ $user->details->study_type}}"
             title=" {{ trans('words.btn_update') }} {{ $user->name }}"></x-admin.layout.back>
 
         @can('has', 'students_login')

@@ -30,7 +30,8 @@ return [
             "تسليم الاوردر" => "picking_order",
             "استرجاع منتج" => "return_product",
             "استرجاع الاوردر" => "return_requested",
-            "عرض سداد المتسحقات ام لا"  => "show_sending_received"
+            "عرض سداد المتسحقات ام لا"  => "show_sending_received",
+            
         ],
 
         "التحويلات" => [
