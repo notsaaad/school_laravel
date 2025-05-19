@@ -31,7 +31,8 @@ return [
             "استرجاع منتج" => "return_product",
             "استرجاع الاوردر" => "return_requested",
             "عرض سداد المتسحقات ام لا"  => "show_sending_received",
-            
+            'اضافة منتج للطلب' => 'order_add_item',
+
         ],
 
         "التحويلات" => [

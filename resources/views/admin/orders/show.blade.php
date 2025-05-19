@@ -325,12 +325,12 @@
                     </form>
 
                 @endif --}}
-
-                  @if($order->type == "items")
-                    <x-form.link class="es-btn-primary" title="{{trans('words.اضافة منتج')}}"
-                    path="admin/items/{{ $order->user_id }}?addTo={{ $order->reference }}"></x-form.link>
-                  @endif
-
+                  @can('has', 'order_add_item')
+                    @if($order->type == "items")
+                      <x-form.link class="es-btn-primary" title="{{trans('words.اضافة منتج')}}"
+                      path="admin/items/{{ $order->user_id }}?addTo={{ $order->reference }}"></x-form.link>
+                    @endif
+                  @endcan
 
 
                 {{-- تسوية --}}
