@@ -187,8 +187,8 @@ Route::prefix("packages")->group(function () {
 
 Route::prefix("orders")->group(function () {
 
-    Route::middleware("checkRole:show_orders")->get('/', [orderViewController::class, 'index']);
-    Route::middleware("checkRole:show_orders")->get('search', [orderViewController::class, 'search']);
+    Route::middleware("checkRole:show_orders|order_payment")->get('/', [orderViewController::class, 'index']);
+    Route::middleware("checkRole:show_orders|order_payment")->get('search', [orderViewController::class, 'search']);
 
     Route::get('{reference}',     [orderViewController::class, 'show'])->name('order.single_order');
     Route::POST('customDeliver',  [orderViewController::class, 'CustomDelivering'])->name('order.CustomDelivering');

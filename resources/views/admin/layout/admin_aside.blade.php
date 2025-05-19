@@ -81,7 +81,7 @@
 
 
 
-            @can('has', 'show_orders')
+            @hasAny('show_orders' ,'order_payment')
                 <x-admin.layout.li class="orders" path="admin/orders" :title="trans('words.الطلبات')">
                     @slot('icon')
                         <div class="aside_icon">
@@ -94,7 +94,9 @@
                         </div>
                     @endslot
                 </x-admin.layout.li>
-            @endcan
+            @endhasAny
+
+
 
 
         </div>

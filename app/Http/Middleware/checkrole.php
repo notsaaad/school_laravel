@@ -14,21 +14,23 @@ class checkrole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, $roles)
     {
-
-
-
         $user_role = role::find(auth()->user()->role_id);
-
 
         if (is_null($user_role)) {
             abort(403, 'لا يوجد لديك صلاحية');
         }
 
+        $user_permissions = json_decode($user_role->permissions ?? '[]', true);
 
-        if (!in_array($role, (json_decode($user_role->permissions)))) {
-            abort(403, 'لا يوجد لديك صلاحية ');
+        // دعم صلاحيات متعددة: show_orders|order_payment|something_else
+        $required_roles = explode('|', $roles);
+
+        $has_permission = count(array_intersect($required_roles, $user_permissions)) > 0;
+
+        if (! $has_permission) {
+            abort(403, 'لا يوجد لديك صلاحية');
         }
 
         return $next($request);
