@@ -280,88 +280,108 @@ function canEdit($application)
 }
 
 
-if (!function_exists('updateWarehouseStock')) {
-    function updateWarehouseStock($productId, $variantId, $quantityChange)
-    {
-        // تدعم الخصم فقط في هذه النسخة
-        if ($quantityChange >= 0) {
-            throw new \Exception("هذه الدالة تعمل فقط في حالة الخصم.");
-        }
+  if (!function_exists('updateWarehouseStock')) {
+      function updateWarehouseStock($productId, $variantId, $quantityChange)
+      {
+          if ($quantityChange == 0) {
+              return false;
+          }
 
-        $requiredQty = abs($quantityChange);
-
-        $variantStocks = WarehouseProductVariant::whereHas('warehouseProduct', function ($query) use ($productId) {
-            $query->where('product_id', $productId);
-        })->where('variant_id', $variantId)
-          ->with('warehouseProduct.warehouse')
-          ->get();
-
-        $affected = [];
-
-        foreach ($variantStocks as $variantStock) {
-            $warehouse = $variantStock->warehouseProduct->warehouse ?? null;
-
-            if (!$warehouse || $warehouse->name == 'مخزن رئيسي') {
-                continue;
-            }
-
-            if ($variantStock->stock <= 0) {
-                continue;
-            }
-
-            $deductQty = min($requiredQty, $variantStock->stock);
-
-            $variantStock->stock -= $deductQty;
-            $variantStock->save();
-
-            $affected[] = [
-                'warehouse_id' => $warehouse->id,
-                'deducted'     => $deductQty,
-            ];
-
-            // تسجيل اللوج في ملف خاص
-            Log::channel('stock')->info('Stock movement logged', [
-                'action'       => 'deduct',
-                'warehouse_id' => $warehouse->id,
-                'product_id'   => $productId,
-                'variant_id'   => $variantId,
-                'quantity'     => $deductQty,
-                'remaining'    => $variantStock->stock,
-                'timestamp'    => now()->toDateTimeString(),
-                'initiator'    => auth()->id() ?? 'system',
-            ]);
-
-            $requiredQty -= $deductQty;
-
-            if ($requiredQty == 0) {
-                break;
-            }
-        }
-
-        if ($requiredQty > 0) {
-            throw new \Exception("المخزون غير كافي، تبقى $requiredQty قطعة لم يتم خصمها.");
-        }
-
-        return $affected;
-    }
-}
-
-if (!function_exists('isProductVariantOutOfStock')) {
-    function isProductVariantOutOfStock($productId, $variantId)
-    {
-        $totalStock = WarehouseProductVariant::whereHas('warehouseProduct', function ($query) use ($productId) {
-            $query->where('product_id', $productId)
-                  ->whereHas('warehouse', function ($q) {
+          // جلب كل المخازن غير "مخزن رئيسي"
+          $variantStocks = WarehouseProductVariant::where('variant_id', $variantId)
+              ->whereHas('warehouseProduct', function ($query) {
+                  $query->whereHas('warehouse', function ($q) {
                       $q->where('name', '!=', 'مخزن رئيسي');
                   });
-        })->where('variant_id', $variantId)
-          ->with('warehouseProduct.warehouse')
-          ->get()
-          ->sum('stock');
+              })
+              ->with('warehouseProduct.warehouse')
+              ->get();
 
-        return $totalStock <= 0;
-    }
-}
+          if ($variantStocks->isEmpty()) {
+              return false;
+          }
+
+          // تحقق من التوفر في حالة الخصم
+          if ($quantityChange < 0) {
+              $totalAvailableStock = $variantStocks->sum('stock');
+              $requiredQty = abs($quantityChange);
+
+              if ($totalAvailableStock < $requiredQty) {
+                  return false;
+              }
+          }
+
+          // ✅ الإضافة
+          if ($quantityChange > 0) {
+              $stock = $variantStocks->first();
+              $stock->stock += $quantityChange;
+              $stock->save();
+
+              Log::channel('stock')->info('Stock added', [
+                  'action'       => 'increase',
+                  'warehouse_id' => $stock->warehouseProduct->warehouse->id,
+                  'product_id'   => $productId,
+                  'variant_id'   => $variantId,
+                  'quantity'     => $quantityChange,
+                  'new_stock'    => $stock->stock,
+                  'timestamp'    => now()->toDateTimeString(),
+                  'initiator'    => auth()->id() ?? 'system',
+              ]);
+          }
+
+          // ❌ الخصم
+          else {
+              $requiredQty = abs($quantityChange);
+
+              foreach ($variantStocks as $stock) {
+                  if ($stock->stock <= 0) {
+                      continue;
+                  }
+
+                  $deduct = min($stock->stock, $requiredQty);
+                  $stock->stock -= $deduct;
+                  $stock->save();
+
+                  Log::channel('stock')->info('Stock deducted', [
+                      'action'       => 'deduct',
+                      'warehouse_id' => $stock->warehouseProduct->warehouse->id,
+                      'product_id'   => $productId,
+                      'variant_id'   => $variantId,
+                      'quantity'     => $deduct,
+                      'remaining'    => $stock->stock,
+                      'timestamp'    => now()->toDateTimeString(),
+                      'initiator'    => auth()->id() ?? 'system',
+                  ]);
+
+                  $requiredQty -= $deduct;
+                  if ($requiredQty <= 0) {
+                      break;
+                  }
+              }
+          }
+
+          return true;
+      }
+  }
+
+
+
+  if (!function_exists('isProductVariantOutOfStock')) {
+      function isProductVariantOutOfStock($productId, $variantId)
+      {
+          $totalStock = WarehouseProductVariant::whereHas('warehouseProduct', function ($query) use ($productId) {
+              $query->where('product_id', $productId)
+                    ->whereHas('warehouse', function ($q) {
+                        $q->where('name', '!=', 'مخزن رئيسي');
+                    });
+          })->where('variant_id', $variantId)
+            ->with('warehouseProduct.warehouse')
+            ->get()
+            ->sum('stock');
+
+          return $totalStock <= 0;
+      }
+  }
 
 
 if (!function_exists('recalculateOrderTotal')) {

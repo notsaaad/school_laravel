@@ -63,7 +63,7 @@
 
             <select name="students[]" id="students" multiple>
                 @foreach ($fee->students as $student)
-                    <option selected value="{{ $student->code }}">{{ $student->code }}</option>
+                    <option selected value="{{ $student->code }}">{{$student->name}} [{{ $student->code }}]</option>
                 @endforeach
             </select>
 

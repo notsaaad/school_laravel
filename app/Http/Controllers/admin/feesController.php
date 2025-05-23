@@ -167,7 +167,7 @@ class feesController extends Controller
     {
         $stages = stage::get();
         $years = year::get();
-
+        // return $fee->students;
 
         return view("admin.fees.edit", get_defined_vars());
     }

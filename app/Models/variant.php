@@ -40,12 +40,15 @@ class variant extends Model
 
 
 
-
     function get_vairant_in_warehouse()
     {
-        return WarehouseProductVariant::whereHas("warehouseProduct", function ($q) {
-            $q->whereHas("warehouse");
-        })->where("variant_id", $this->id)->first();
+        return WarehouseProductVariant::where('variant_id', $this->id)
+            ->whereHas('warehouseProduct', function ($q) {
+                $q->whereHas('warehouse', function ($w) {
+                    $w->where('name', '!=', 'مخزن رئيسي');
+                });
+            })
+            ->sum('stock');
     }
 
 

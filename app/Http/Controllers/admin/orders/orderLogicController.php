@@ -188,13 +188,13 @@ class orderLogicController extends Controller
         if (is_null($vairant_in_warehouse)) {
             return json(["status" => "error", "message" => "هذا المنتج لا يوجد في اي مخزن فرعي"]);
         } else {
-            if ($vairant_in_warehouse->stock == 0) {
+            if ($vairant_in_warehouse == 0) {
                 return json(["status" => "error", "message" => "لا يوجد استوك في المخزن الفرعي"]);
             }
         }
 
 
-        if ($vairant_in_warehouse->stock  < $orderDatail->qnt) {
+        if ($vairant_in_warehouse < $orderDatail->qnt) {
             return json(["status" => "error", "message" => "الكمية المتاحة في المخزن لا تساوي الكمية المطلوبة"]);
         }
         // if (isProductVariantOutOfStock($orderDatail->product_id,$vairant_in_warehouse)) {
@@ -204,43 +204,51 @@ class orderLogicController extends Controller
 
 
 
-        $orderDatail->update([
-            "picked" => "1",
-            "picked_at" => Carbon::now()
-        ]);
-
-        $vairant_in_warehouse->update([
-            "stock" => $vairant_in_warehouse->stock - $orderDatail->qnt,
-        ]);
 
 
+        // $vairant_in_warehouse->update([
+        //     "stock" => (int)$vairant_in_warehouse - $orderDatail->qnt,
+        // ]);
+        $new_stock = $orderDatail->qnt;
+        $update    = updateWarehouseStock($orderDatail->product_id, $orderDatail->variant_id, (int)"-$new_stock");
 
-        $existsPicked0 = orderDatail::where('order_id', $order->id)
+        if($update){
+            $orderDatail->update([
+              "picked" => "1",
+              "picked_at" => Carbon::now()
+            ]);
+            $existsPicked0 = orderDatail::where('order_id', $order->id)
             // ->where('variant_id', $vairant->id)
             ->where('picked', 0)
             ->exists();
 
-        $existsPicked1 = orderDatail::where('order_id', $order->id)
-            // ->where('variant_id', $vairant->id)
-            ->where('picked', 1)
-            ->exists();
+          $existsPicked1 = orderDatail::where('order_id', $order->id)
+              // ->where('variant_id', $vairant->id)
+              ->where('picked', 1)
+              ->exists();
 
-        if (!$existsPicked0) {
-            $order->update([
-                "status" => "picked",
-            ]);
-        } elseif ($existsPicked0 && $existsPicked1) {
-            $order->update([
-                "status" => "partially_picked",
-            ]);
+          if (!$existsPicked0) {
+              $order->update([
+                  "status" => "picked",
+              ]);
+          } elseif ($existsPicked0 && $existsPicked1) {
+              $order->update([
+                  "status" => "partially_picked",
+              ]);
+          }
+
+
+
+          DB::commit();
+
+
+          return json(["status" => "success", "message" => "تم تسليم المنتج"]);
         }
 
 
+        return json(["status" => "error", "message" => "لا يمكن تحديث الكمية"]);
 
-        DB::commit();
 
-
-        return json(["status" => "success", "message" => "تم تسليم المنتج"]);
     }
     function return(Request $request, order $order)
     {
@@ -285,7 +293,7 @@ class orderLogicController extends Controller
         }
 
         $vairant_in_warehouse->update([
-            "stock" => $vairant_in_warehouse->stock + $orderDatail->qnt,
+            "stock" => $vairant_in_warehouse + $orderDatail->qnt,
         ]);
 
 

@@ -79,6 +79,7 @@
 
 @section('js')
     <script>
-        $('li.buses').addClass('active');
+        OpenMenu('buses')
+        $('#aside .buses-orders').addClass('active');
     </script>
 @endsection

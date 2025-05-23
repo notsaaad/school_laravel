@@ -14,7 +14,7 @@
             value="{{ old($code ? "{$code}.{$name}" : $name) }}"
             {{ $attributes->class(['checkThis' => $required, 'invalid' => $errors->has($code ? "{$code}.{$name}" : $name)]) }}
             type="text" id="{{ $code ? $code . '_' . $name : $name }}"
-            name="{{ $code ? $code . '[' . $name . ']' : $name }}" placeholder="{{ $placeHolder ?? '' }}">
+            name="{{ $code ? $code . '[' . $name . ']' : $name }}" placeholder="{{ $placeHolder ?? '' }}" autocomplete="off">
 
         @error($code ? "{$code}.{$name}" : $name)
             <p class="invalid_message">

@@ -173,7 +173,7 @@
                 @endslot
             </x-admin.layout.li>
 
-            <x-admin.layout.li class="" path="admin/buses/orders" :title="trans('words.الطلبات')">
+            <x-admin.layout.li class="buses-orders" path="admin/buses/orders" :title="trans('words.الطلبات')">
                 @slot('icon')
                     <i class="fa-solid fa-circle aside_icon"></i>
                 @endslot
@@ -449,24 +449,24 @@
 
         <div class="itemm" id="panel-expeness">
 
-            <x-admin.layout.li class="" path="admin/expenses/add-system" title="اضف نظام سنة دراسية">
+            <x-admin.layout.li class="addSystem" path="admin/expenses/add-system" title="اضف نظام سنة دراسية">
                 @slot('icon')
                     <i class="fa-solid fa-chalkboard-user"></i>
                 @endslot
             </x-admin.layout.li>
 
-            <x-admin.layout.li class="" path="admin/expenses/view-systems" title="عرض الانظمة الدراسية">
+            <x-admin.layout.li class="ShowSystems" path="admin/expenses/view-systems" title="عرض الانظمة الدراسية">
                 @slot('icon')
                     <i class="fa-solid fa-chalkboard-user"></i>
                 @endslot
             </x-admin.layout.li>
 
-            <x-admin.layout.li class="" path="admin/expenses" title="اضافة مصاريف دراسية">
+            <x-admin.layout.li class="addnewsystemyears" path="admin/expenses" title="اضافة مصاريف دراسية">
                 @slot('icon')
                     <i class="fa-solid fa-circle aside_icon"></i>
                 @endslot
             </x-admin.layout.li>
-            <x-admin.layout.li class="" path="admin/expenses" title="عرض للمصاريف الادارية">
+            <x-admin.layout.li class="managesystemyears" path="admin/expenses" title="عرض للمصاريف الادارية">
                 @slot('icon')
                     <i class="fa-solid fa-circle aside_icon"></i>
                 @endslot

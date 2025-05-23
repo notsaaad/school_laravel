@@ -543,3 +543,9 @@ function error_with_sound(message) {
 $(".modelSelect").on("change", function () {
     checkAllForms();
 });
+
+
+function OpenMenu(selector){
+  $('#panel-'+selector).show();
+  $('#flip-'+selector + ' .menu-arrow').addClass('down');
+}

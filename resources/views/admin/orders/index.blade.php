@@ -74,14 +74,11 @@
                             <td> <span class="copy" onclick="copy('{{ $order->reference }}')"><i
                                         class="fa-regular fa-clipboard"></i></span> <a
                                     href="/admin/orders/{{ $order->reference }}">{{ $order->reference }}</a> </td>
-                            <td>@if (isset($order->user->name))
-                                {{ $order->user->name }}
-                            @endif
-                            <br>
-                                <div class="d-flex align-items-center justify-content-center">
-                                    {{-- <span class="copy" onclick="copy(' {{ $order->user->code }}')"><i
-                                            class="fa-regular fa-clipboard"></i></span> {{ $order->user->code }} --}}
-                                </div>
+                            <td>
+                              @if (isset($order->user->name))
+                                <div><a style="text-decoration: none" href="{{ route('admin.edit.student', $order->user->id) }}">{{ $order->user->name }}</a></div>
+                              @endif
+
                             </td>
 
                             <td>{{ $order->package->name ?? 'Items' }}</td>
@@ -141,7 +138,12 @@
         <x-form.input col="col-6" dir="ltr" value="{{ $_GET['date'] ?? '' }}" class="date" type="search"
             label="{{ trans('words.تاريخ الشراء') }}" name="date"></x-form.input>
 
+      <x-form.select label="محتوي الاوردر" required="false" name="type">
+        <option disabled >قم بختيار نوع  محتوي الطلب</option>
+        <option @selected(isset($_GET['type']) && $_GET['type'] == 'items')  value="items">Items</option>
+        <option @selected(isset($_GET['type']) && $_GET['type'] == 'package')  value="package">Package</option>
 
+      </x-form.select>
 
 
 

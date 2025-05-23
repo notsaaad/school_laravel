@@ -429,7 +429,7 @@ try {
                     $query->where('user_id',  $user->id);
                 });
         })->findOrFail($feeID);
-
+        // return get_defined_vars();
         return view('admin/students/show_student_fee', get_defined_vars());
     }
 }

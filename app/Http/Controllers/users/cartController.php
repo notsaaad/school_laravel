@@ -44,8 +44,8 @@ class cartController extends Controller
 
     function checkOut(Request $request)
     {
-
-        $carts = cart::with("product", "variant")->where("user_id", auth()->user()->id)->get();
+      $carts = cart::with("product", "variant")->where("user_id", auth()->user()->id)->get();
+      // return $carts;
 
         try {
             DB::beginTransaction();
@@ -64,7 +64,7 @@ class cartController extends Controller
                 $vairant =   $cart->variant;
 
 
-                for ($i = 1; $i <=  $cart->qnt; $i++) {
+                // for ($i = 1; $i <=  $cart->qnt; $i++) {
                     orderDatail::create([
                         "order_id" => $order->id,
                         "product_id" => $product->id,
@@ -72,9 +72,9 @@ class cartController extends Controller
                         "discription" =>  " " . $vairant->product->name . " " . "[ "  . $vairant->value . " ]"  . " ",
                         "price" => $product->price,
                         "sell_price" => $product->sell_price,
-                        "qnt" => 1,
+                        "qnt" => $cart->qnt
                     ]);
-                }
+                // }
             }
 
 

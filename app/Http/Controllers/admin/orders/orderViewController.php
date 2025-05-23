@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin\orders;
 
 use App\Models\User;
 use App\Models\order;
+use App\Models\variant;
 use Illuminate\Http\Request;
 use App\Models\paymentHistory;
 use Illuminate\Support\Facades\DB;
@@ -60,32 +61,57 @@ class orderViewController extends Controller
 
     }
     function returnItem(Request $request){
-        $order_id        = $request->order_id;
-        $order_detail_id = $request->order_detail_id;
-        $code            = $request->code;
-        $price           = $request->price;
-        $payment_method  = $request->payment_method;
+        $request->validate([
+            "product_sku" => "required|string|exists:variants,sku",
+        ],
+      [
+        'product_sku.required' => 'يجب ان عليك ادخال البار كود الخاص بالمنتج',
+        'product_sku.exists' => 'هذا البار كود غير موجود في النظام',
+      ]
+
+      );
+      $order_id        = $request->order_id;
+      $code            = $request->code;
+      $vairant         = variant::where('sku', $request->product_sku)->firstOrFail();
+      $vairant_id      = $vairant->id;
+      $order           = order::where('reference', $code)->firstOrFail();
+      $details         = $order->details;
+      $order_vairnt    = collect($details)->firstWhere('variant_id', $vairant_id);
+      $payment_method  = $request->payment_method;
+
+      if(!$order_vairnt){
+        return redirect()->route('order.single_order', $code)->with(['error'=>'الطلب لا يحتوي علي هذا المنتج']);
+      }
+      $updated            = updateWarehouseStock($vairant->product_id, $vairant->id,  1);
+      $price              = $vairant->product->sell_price;
+      $service_expeness   = settings('service_expenses');
+      $price              = $price + ($price * $service_expeness / 100);
+      $order_vairnt->qnt  = $order_vairnt->qnt - 1;
+      if($order_vairnt->qnt <= 0){
+        $order_vairnt->delete();
+      }else{
+        $order_vairnt->save();
+      }
+
         $user_id = Auth::user()->id;
         $create_arr = array(
-            "amount"=>(int)$price,
+            "amount"=>(float)"-$price",
             "order_id"=>$order_id,
             "type"=>$payment_method,
             "auth"=>$user_id
         );
         $paymentHistory = paymentHistory::create($create_arr);
-        // DB::table('order_datails')->where('id', $order_detail_id)->delete();
-        $order = DB::table('orders')->where('id', $order_id)->first();
-        $old_price = $order->price;
-        $new_price = $old_price + (int)$price;
-        return $new_price;
+        return redirect()->route('order.single_order', $code)->with(['success'=>'تم استرجاع المنتج بنجاح']);
+    }
 
-        return redirect()->route('order.single_order', $code)->with(['success'=>'طب استرجاع المنتج بنجاح']);
+    function delete(Request $request){
+      order::find($request->id)->delete();
+      return redirect()->route('admin.order.index')->with('success', 'تم مسح الطلب بنجاح');
     }
     function search(Request $request)
     {
 
         $filters = [
-            // 'reference' => $request->reference ?? '',
             'status' => $request->status ?? '',
         ];
 
@@ -140,6 +166,9 @@ class orderViewController extends Controller
             isset($endDate) && !empty($endDate)  ? $orders = $orders->whereDate("created_at", '<=', $endDate) :  $orders = $orders->whereDate("created_at", '<=', $startDate);
         }
 
+        if(isset($request->type)){
+          $orders->where('type', $request->type);
+        }
 
 
         $orders = $orders->paginate(50);

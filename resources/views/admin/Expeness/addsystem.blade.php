@@ -22,10 +22,11 @@
     </div>
 
     @section('js')
+
         <script>
-
-        $('.modelSelect').select2();
-
+          OpenMenu('expeness');
+          $('.modelSelect').select2();
+          $('#aside .addSystem').addClass('active');
 
         function show_new_value_model(e) {
 

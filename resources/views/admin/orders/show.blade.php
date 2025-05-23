@@ -248,6 +248,20 @@
           font-size: 13px;
           right: -5px;
         }
+
+        .modal {
+            z-index: 1050;
+        }
+        .modal-backdrop {
+            z-index: 1040;
+        }
+        .model .select-dropdown,
+        .model .select2-container--open {
+            z-index: 1060 !important;
+        }
+        .model .modal-content {
+            overflow: visible !important;
+        }
     </style>
 @endsection
 
@@ -307,6 +321,13 @@
                         <span> {{ fixdate($order->created_at) }}
                         </span>
                     </div>
+                    <div  class="ordertype time">
+                      <span>{{$order->type}}</span>
+                    </div>
+
+                    <div  class="ordertype time">
+                      <a href="{{ route('admin.edit.student', $order->user->id) }}">{{$order->user->name}}</a>
+                    </div>
 
 
                 </div>
@@ -332,6 +353,15 @@
                     @endif
                   @endcan
 
+                  @can('has', 'delete_order')
+                    <form action="{{ route('order.delete') }}" method="POST">
+                      @csrf
+                      <input type="hidden" name="id" value="{{ $order->id }}">
+                      <button class="btn btn-danger">مسح الطلب</button>
+                    </form>
+                  @endcan
+
+
 
                 {{-- تسوية --}}
                 @if ($order->status == 'pending')
@@ -347,6 +377,14 @@
                     @endcan
                 @endif
 
+          @can('has','return_product')
+            @if($order->type == "items" )
+              <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#return_product_from">
+                استرجاع منتج
+              </button>
+            @endif
+          @endcan
+
                 {{-- تسليم --}}
                 @if ($order->details()->where('picked', '0')->exists() == 'paid'  && ( $order->status == "paid" ||  $order->status == "to be confirmed" || $order->status == "partially_picked"))
                     @can('has', 'picking_order')
@@ -358,19 +396,19 @@
 
 
                 {{-- استرجاع --}}
-                @if ($order->status == 'picked' || $order->status == 'partially_picked')
+                {{-- @if (($order->status == 'picked' || $order->status == 'partially_picked') && $order->type == "items")
                     @can('has', 'return_product')
                         <button type="button" class="delete" data-bs-toggle="modal" data-bs-target="#product_return_Modal">
                             {{ trans('words.استرجاع منتج') }}
                         </button>
                     @endcan
-                @endif
+                @endif --}}
 
 
 
                 @if ($order->status == 'pending')
                     @can('has', 'cancel_order')
-                        @if ($order->status == 'pending')
+                        @if ($order->status == 'pending' && $order->type == "items")
                             <x-form.button class="delete" id="delete-order" data-order-id="{{ $order->id }}">
                                 {{ trans('words.الغاء الاوردر') }}
                             </x-form.button>
@@ -401,7 +439,7 @@
                 @endcan
 
                 @can('has', 'return_requested')
-                    @if ($order->status == 'pending')
+                    @if ($order->status == 'pending' && $order->type == "items")
                         <x-form.button class="delete" id="return_requested_btn" data-order-id="{{ $order->id }}">
                             {{ trans('words.طلب استرجاع') }}
                         </x-form.button>
@@ -463,8 +501,12 @@
                                 @foreach ($order->details as $detail)
                                   @php
                                     $itemStock = isProductVariantOutOfStock($detail->product_id, $detail->variant_id);
+                                    $itemStockQTY = $detail->variant->get_vairant_in_warehouse() ?? 0;
+                                    if($itemStockQTY < $detail->qnt){
+                                      $itemStock = true;
+                                    }
                                   @endphp
-                                    <tr class=" @if($detail->picked == 0  && $itemStock) outOfStock  @endif {{ $detail->variant->sku }}">
+                                    <tr class=" @if($detail->picked == 0  && $itemStock ) outOfStock  @endif {{ $detail->variant->sku }}">
 
                                         @if($order->status != 'picked' &&  $detail->picked == 0 )
                                         <td><input type="checkbox" class="check_order_id" id="{{$detail->id}}" onChange="CheckBTN(this.id)" order="{{$detail->id}}"></td>
@@ -495,7 +537,7 @@
 
 
 
-                                        <td>{{ $detail->variant->get_vairant_in_warehouse()->stock ?? 0 }}</td>
+                                        <td title="">{{ $detail->variant->get_vairant_in_warehouse() ?? 0 }}</td>
 
                                         @can('has', 'picking_order')
                                             @if ($detail->picked)
@@ -572,33 +614,6 @@
                                                 <td>تم تسليم المنتج</td>
                                             @endif
                                         @endcan
-                                        @if($detail->picked == 1 && $order->type == "items" )
-                                                <td>
-                                                    <form action="{{route('order.returnItem')}}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="code" value="{{$order->reference}}">
-                                                        <input type="hidden" name="price" value="-{{$detail->product->sell_price}}">
-                                                        <input type="hidden" name="order_detail_id" value="{{$detail->id}}">  {{-- order Detail id --}}
-                                                        <input type="hidden" name="order_id" value="{{$order->id}}">  {{-- order Detail id --}}
-                                                        <div style="display: flex;justify-content: center;align-items: center;flex-direction: column;">
-                                                            <x-form.select  required name="payment_method" label="وسيلة الدفع">
-
-                                                                <option @selected('visa')  value="visa">visa</option>
-                                                                <option  @selected('bank')  value="bank">bank</option>
-                                                                <option  @selected('cash') selected  value="cash">cash</option>
-
-                                                            </x-form.select>
-                                                            <button class='btn btn-danger'>استرجاع القطعة</button>
-                                                            <p title="المبلغ" class="small-product-price text-danger">
-                                                                {{$detail->product->sell_price}}
-                                                            </p>
-                                                        </div>
-                                                    </form>
-                                                </td>
-                                        @endif
-
-
-
 
 
                                     </tr>
@@ -622,9 +637,6 @@
             @can('has', 'order_payment')
                 <div class="col-lg-4 col-12 mt-2">
                     <div class="sammery">
-                        {{-- <p>Order Fees {{$order->getFees()}}</p>
-                        <p>Order BasePrice {{$order->getBasePrice()}}</p>
-                        <p>Order TotalPrice {{$order->getTotalPrice()}}</p> --}}
                         <div class="sammery_title">{{ trans('words.الفاتورة') }}</div>
 
                         <div class="d">
@@ -691,6 +703,28 @@
 
     </div>
 
+              <x-form.create_model id="return_product_from" title="استرجاع منتج" path="admin/orders/Retrunitem">
+                <input type="hidden" name="code"     value="{{$order->reference}}">
+                <input type="hidden" name="order_id" value="{{$order->id}}">
+
+
+                <x-form.input class="label" required="true" name="product_sku" placeHolder="ادخل كود المنتج">
+                </x-form.input>
+
+                  <div class="group col-lg-6 col-12">
+                    <label for="payment_method" class="mb-2">اختر نوع الدفع  <span class="text-danger">*</span></label>
+                    <select class="modelSelect w-100 checkThis select2-hidden-accessible" name="payment_method">
+                      <option  value="visa">visa</option>
+                      <option  value="bank">bank</option>
+                      <option  value="cash">cash</option>
+                  </select>
+                  @error('payment_method')
+                    <small class="text-danger">{{$message}}</small>
+                  @enderror
+                  </div>
+              </x-form.create_model>
+
+
 
     <!-- المودال الخاص بتسليم الاوردر -->
     <div class="modal fade" id="orderModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="orderModalLabel"
@@ -703,7 +737,7 @@
                 </div>
                 <div class="modal-body">
 
-                    <x-form.input col="col-12" placeholder="Product Sku" type="search" name="sku"
+                    <x-form.input col="col-12" placeholder="Enter SKU than hit Enter" type="search" name="sku"
                         label="{{ trans('words.ادخل كود المنتج') }}"></x-form.input>
                 </div>
                 <div class="modal-footer">
@@ -910,8 +944,8 @@
 
                             }
                         },
-                        error: function() {
-
+                        error: function(response) {
+                            console.log(response);
                             error_with_sound("هناك خطأ ما")
 
                         }
@@ -964,6 +998,10 @@
             location.reload();
         });
         $('#product_return_Modal').on('hidden.bs.modal', function() {
+            location.reload();
+        });
+
+        $('#return_product_from').on('hidden.bs.modal', function() {
             location.reload();
         });
 
